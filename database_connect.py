@@ -77,6 +77,7 @@ class DatabaseSession(object):
 				increment = 1
 				time = ""
 
+				# Get all id's from the database so we can compare them to the current id
 				db_ids = self.session.execute('SELECT id FROM ' + table)
 
 				while (current_id <= id_range_end):
@@ -97,10 +98,8 @@ class DatabaseSession(object):
 
 					# Update row if current id already exists or insert new id if it does not
 					if (id_same == True):
-						#self.session.execute("UPDATE ", table, " SET waterlevel = '", waterlevel, "' WHERE id = ", current_id, ";")
 						self.session.execute("UPDATE " + table +" SET waterlevel = (%s), time = (%s) WHERE id = (%s)",(table, waterlevel, fetched_time, current_id))
 					elif (id_same == False):
-						#self.session.execute("INSERT INTO ", table, " (id, time, waterlevel) VALUES (", current_id, ", ", time, ", ", waterlevel, ");")
 						self.session.execute("INSERT INTO " + table + " (id, time, waterlevel) VALUES (%s, %s, %s)", (current_id, fetched_time, waterlevel))
 					else:
 						print "Error: Something has gone terribly wrong"
