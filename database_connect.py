@@ -33,19 +33,22 @@ class DatabaseSession(object):
 
 	#methods
 	def establish_connection(self):
-		try:
-			auth_provider = PlainTextAuthProvider(username = self.username, password = self.password)
+		if (self.connection == False):
+			try:
+				auth_provider = PlainTextAuthProvider(username = self.username, password = self.password)
 
-			cluster = Cluster(self.node_ips, auth_provider = auth_provider, port = self.port)
-			self.metadata = cluster.metadata
+				cluster = Cluster(self.node_ips, auth_provider = auth_provider, port = self.port)
+				self.metadata = cluster.metadata
 
-			self.session = cluster.connect(self.keyspace)
-			print "Connected to cluster: " + self.metadata.cluster_name
-			print self.session
-			self.connection = True
+				self.session = cluster.connect(self.keyspace)
+				print "Connected to cluster: " + self.metadata.cluster_name
+				print self.session
+				self.connection = True
 
-		except Exception, e:
-			print e
+			except Exception, e:
+				print e
+		else:
+			print "Error: Connection already established!"
 
 	def fetch_waterlevel(self):
 		if (self.connection == True):
@@ -57,13 +60,13 @@ class DatabaseSession(object):
 			except Exception as e:
 				print e
 		else:
-			print "Error: No database connection"
+			print "Error: No database connection!"
 
 	def get_connection(self):
 		if (self.connection == True):
 			return self.connection
 		else:
-			print "Error: No database connection"
+			print "Error: No database connection!"
 
 	def close_connection(self):
 		try:
