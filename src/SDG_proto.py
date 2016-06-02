@@ -1,15 +1,18 @@
-from database_connect import DatabaseSession
+# Main functionality (Presentation layer)
 
-# initialize database object
-tmp_conn = DatabaseSession()
+from SDG_bl import SimDataGen
+import sys
 
-# Connect to database
-tmp_conn.establish_connection()
-
-con_success = tmp_conn.get_connection()
-
-if (con_success == True):
+try:
 	
-	tmp_conn.send_current(1000, 1010)
+	# Initialize SimDataGen object
+	sdg = SimDataGen(1000, 1010, 30)
 
-	tmp_conn.close_connection()
+	sdg.start_sdg(2)
+
+	var = raw_input("Enter something: ")
+
+	sdg.database_close()
+
+except (KeyboardInterrupt, SystemExit):
+	sys.exit()
