@@ -13,8 +13,9 @@ class SimDataGen(object):
 	id_range_end = None
 	waterlevel = None
 	time = None
-	threading_is = True
+	threading_is = False
 	threads = None
+	delay_time = 60
 	
 	# Initialize database object
 	cas_conn = DatabaseSession()
@@ -26,6 +27,7 @@ class SimDataGen(object):
 		self.id_range_end = id_range_end
 		self.waterlevel = waterlevel
 		self.time = get_time_format()
+		self.delay_time = 60
 
 	#Methods
 
@@ -38,64 +40,42 @@ class SimDataGen(object):
 		# Get all id's from the database so we can compare them to the current id
 		db_ids = self.cas_conn.fetch_ids()
 
+		self.threading_is = True
+
 		while (self.threading_is == True):
-			# Check if we should increase or decrease waterlevel to create a wave
-			if (self.waterlevel == 30):
-				increment = 1
-			elif (self.waterlevel == 40):
-				increment = -1
 
-			# Check if our current id already exists in the database
-			for user_id in db_ids:
-				if (current_id == user_id):
-					id_same = True
+			delay_done = False
+			# Suspend execution for 5 seconds
+			sleep(self.delay_time)
+
+			current_id = self.id_range_start
+
+			while (delay_done == False):
+				# Check if we should increase or decrease waterlevel to create a wave
+				if (self.waterlevel == 30):
+					increment = 1
+				elif (self.waterlevel == 40):
+					increment = -1
+
+				# Check if our current id already exists in the database
+				for user_id in db_ids:
+					if (current_id == user_id):
+						id_same = True
+					else:
+						id_same = False
+
+				self.time = get_time_format()
+
+				self.cas_conn.send_current(id_same, current_id, self.waterlevel, self.time)
+
+				# Increment waterlevel
+				self.waterlevel = self.waterlevel + increment
+
+				# End inner loop if current_id is at the end of the id range
+				if (current_id == self.id_range_end):
+					delay_done = True
 				else:
-					id_same = False
-
-			self.time = get_time_format()
-
-			self.cas_conn.send_current(id_same, current_id, self.waterlevel, self.time)
-
-			# Increment waterlevel
-			self.waterlevel = self.waterlevel + increment
-
-			# Reset current_id to id_range_start
-			if (current_id == self.id_range_end):
-				current_id = self.id_range_start
-			else:
-				current_id = current_id + 1
-
-	# Insert data into the database using an id range
-	def run_by_idrange(self):
-		id_same = False
-		increment = 1
-		current_id = self.id_range_start
-
-		# Get all id's from the database so we can compare them to the current id
-		db_ids = self.cas_conn.fetch_ids()
-
-		while (current_id <= self.id_range_end):
-			# Check if we should increase or decrease waterlevel to create a wave
-			if (self.waterlevel == 30):
-				increment = 1
-			elif (self.waterlevel == 40):
-				increment = -1
-
-			# Check if our current id already exists in the database
-			for user_id in db_ids:
-				if (current_id == user_id):
-					id_same = True
-				else:
-					id_same = False
-
-			self.time = get_time_format()
-
-			self.cas_conn.send_current(id_same, current_id, self.waterlevel, self.time)
-
-			# Increment waterlevel
-			self.waterlevel = self.waterlevel + increment
-
-			current_id = current_id + 1
+					current_id = current_id + 1
 
 	# Threading frame
 	def run_indef(self):
@@ -111,13 +91,19 @@ class SimDataGen(object):
 
 	# Close running thread and database connection
 	def database_close(self):
-		# Set threading_is variable to false so the threead will close
+		# Set threading_is variable to false so the thread will close
 		self.threading_is = False
+
+		# Wait for active threads to finish
+		self.threads.join()
 		# Close database connection
 		self.cas_conn.close_connection()
 
+	def set_delay_time(self, delay_time):
+		
+		self.delay_time = int(delay_time)
 
-	# Function called from SDG_proto
+	# Function called from main program
 	def start_sdg(self, runmode):
 		# Do not allow id's below 1000 to be used
 		if (self.id_range_start > 999):
@@ -132,10 +118,6 @@ class SimDataGen(object):
 				print "Logic Error: other runmodes under construction"
 
 			con_success = self.cas_conn.get_connection()
-
-			if (con_success == True and runmode == 1):
-				# Close connection
-				self.database_close()
 			
 		else:
-			print "Error: Failed to insert data to database!"
+			print "Logic Error: ID range too small!"

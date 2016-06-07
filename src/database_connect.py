@@ -59,9 +59,9 @@ class DatabaseSession(object):
 		if (self.connection == True):
 			try:
 				table = modl.get_table()
-				rows = self.session.execute('SELECT waterlevel FROM ' + table)
+				rows = self.session.execute('SELECT * FROM ' + table)
 				for user_row in rows:
-					print user_row.waterlevel
+					print user_row.nimi, user_row.waterlevel
 			except Exception as e:
 				print e
 		else:
