@@ -68,6 +68,11 @@ class SimDataGen(object):
 
 				self.cas_conn.send_current(id_same, current_id, self.waterlevel, self.time)
 
+				try:
+					log_data("SDG_bl/thread_script", "Inserted data into database")
+				except Exception, e:
+					print e
+
 				# Increment waterlevel
 				self.waterlevel = self.waterlevel + increment
 
@@ -85,6 +90,11 @@ class SimDataGen(object):
 
 			self.threads.start()
 
+			try:
+				log_data("SDG_bl/run_indef", "Started thread")
+			except Exception, e:
+				print e
+
 		except Exception as e:
 			print e
 			sys.exit()
@@ -99,9 +109,18 @@ class SimDataGen(object):
 		# Close database connection
 		self.cas_conn.close_connection()
 
+		try:
+			log_data("SDG_bl/database_close", "Closed database")
+		except Exception, e:
+			print e
+
 	def set_delay_time(self, delay_time):
 		
 		self.delay_time = int(delay_time)
+		try:
+			log_data("SDG_bl/set_delay_time", "Altered delay time")
+		except Exception, e:
+			print e
 
 	# Function called from main program
 	def start_sdg(self, runmode):
