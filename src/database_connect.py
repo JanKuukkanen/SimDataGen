@@ -20,7 +20,7 @@ class DatabaseSession(object):
 	metadata = None
 
 	#Constructor
-	def __init__(self="", uname="", pword="", kspace="", _node_ips="", _port=""):
+	def __init__(self, uname="", pword="", kspace="", _node_ips="", _port=""):
 
 		self.username = modl.get_username()
 		self.password = modl.get_password()
@@ -52,66 +52,34 @@ class DatabaseSession(object):
 		else:
 			print "Error: Connection already established!"
 
-	# Test method for getting waterlevel data from the database
-	def fetch_waterlevel(self):
+	def fetch_ids(self):
 		if (self.connection == True):
 			try:
 				table = modl.get_table()
-				rows = self.session.execute('SELECT waterlevel FROM ' + table)
-				for user_row in rows:
-					print user_row.waterlevel
-			except Exception as e:
-				print e
-		else:
-			print "Error: No database connection!"
+
+				db_ids = self.session.execute('SELECT id FROM ' + table)
+				return db_ids
+			except Exception, e:
+				print "Database Error: ", e
 
 	# Insert or update data regarding the water current to the database
-	def send_current(self, id_range_start, id_range_end):
+	def send_current(self, id_same, current_id, waterlevel, fetched_time):
 		# do not allow id's below 1000 to be used
-		if (self.connection == True and id_range_start > 999):
+		if (self.connection == True):
 			try:
-				id_same = False
 				table = modl.get_table()
-				current_id = id_range_start
-				waterlevel = 30
-				increment = 1
-				time = ""
-
-				# Get all id's from the database so we can compare them to the current id
-				db_ids = self.session.execute('SELECT id FROM ' + table)
-
-				while (current_id <= id_range_end):
-					# Check if we should increase or decrease waterlevel to create a wave
-					if (waterlevel == 30):
-						increment = 1
-					elif (waterlevel == 40):
-						increment = -1
-
-					# Check if our current id already exists in the database
-					for user_id in db_ids:
-						if (current_id == user_id):
-							id_same = True
-						else:
-							id_same = False
-
-					fetched_time = get_time_format()
-
-					# Update row if current id already exists or insert new id if it does not
-					if (id_same == True):
-						self.session.execute("UPDATE " + table +" SET waterlevel = (%s), time = (%s) WHERE id = (%s)",(table, waterlevel, fetched_time, current_id))
-					elif (id_same == False):
-						self.session.execute("INSERT INTO " + table + " (id, time, waterlevel) VALUES (%s, %s, %s)", (current_id, fetched_time, waterlevel))
-					else:
-						print "Error: Something has gone terribly wrong"
-
-					waterlevel = waterlevel + increment
-
-					current_id = current_id + 1
+				# Update row if current id already exists or insert new id if it does not
+				if (id_same == True):
+					self.session.execute("UPDATE " + table +" SET waterlevel = (%s), time = (%s) WHERE id = (%s)",(waterlevel, fetched_time, current_id))
+				elif (id_same == False):
+					self.session.execute("INSERT INTO " + table + " (id, time, waterlevel) VALUES (%s, %s, %s)", (current_id, fetched_time, waterlevel))
+				else:
+					print "Error: Something has gone terribly wrong"
 
 			except Exception as e:
 				print e
 		else:
-			print "Error: Failed to insert data to database!"
+			print "Database Error: Failed to insert data to database!"
 
 	# return the state of the database connection
 	def get_connection(self):
