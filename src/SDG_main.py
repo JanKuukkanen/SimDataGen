@@ -1,10 +1,14 @@
 # Main functionality (Presentation layer)
 
 from SDG_bl import SimDataGen
+import os
 import sys
 
 try:
 	loop = None
+
+	if not os.path.lexists("/var/log/SimDataGen"):
+		os.makedirs("/var/log/SimDataGen")
 
 	answer = raw_input("Enter thread number: ")
 
