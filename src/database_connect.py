@@ -1,5 +1,3 @@
-# All database layer functionality
-
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from data_format import *
