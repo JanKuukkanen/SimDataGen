@@ -54,19 +54,6 @@ class DatabaseSession(object):
 		else:
 			print "Error: Connection already established!"
 
-	# Test method for getting waterlevel data from the database
-	def fetch_waterlevel(self):
-		if (self.connection == True):
-			try:
-				table = modl.get_table()
-				rows = self.session.execute('SELECT * FROM ' + table)
-				for user_row in rows:
-					print user_row.nimi, user_row.waterlevel
-			except Exception as e:
-				print e
-		else:
-			print "Error: No database connection!"
-
 	def fetch_ids(self):
 		if (self.connection == True):
 			try:
