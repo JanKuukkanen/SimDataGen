@@ -10,25 +10,21 @@ from data_format import *
 class SimDataGen(object):
 
 	#Attributes
-	id_range_start = None
-	id_range_end = None
-	waterlevel = None
 	time = None
 	threading_is = False
 	threads = None
 	delay_time = 60
+	locationList = []
 	
 	# Initialize database object
 	cas_conn = DatabaseSession()
 
 	#Constructor
-	def __init__(self, id_range_start=1000, id_range_end=1010, waterlevel=30):
+	def __init__(self, delay_time=60):
 
-		self.id_range_start = id_range_start
-		self.id_range_end = id_range_end
-		self.waterlevel = waterlevel
 		self.time = get_time_format()
-		self.delay_time = 60
+		self.delay_time = delay_time
+		self.locationList = []
 
 	#Methods
 
@@ -83,11 +79,42 @@ class SimDataGen(object):
 				else:
 					current_id = current_id + 1
 
+	# Threading function
+	def meterwell_thread(self, arg):
+		id_same = False
+		current_id = self.locationList[0].get_wellid()
+
+		# Get all id's from the database so we can compare them to the current id
+		db_ids = self.cas_conn.fetch_ids()
+
+		self.threading_is = True
+
+		while (self.threading_is == True):
+
+			# Suspend execution for 5 seconds
+			sleep(self.delay_time)
+
+			# Check if our current id already exists in the database
+			for user_id in db_ids:
+				if (current_id == user_id):
+					id_same = True
+				else:
+					id_same = False
+
+			self.time = get_time_format()
+
+			self.cas_conn.send_meterwell_data(id_same, current_id, self.locationList[0].name, self.locationList[0].eastloc, self.locationList[0].northloc, self.locationList[0].waterlevelheight, self.locationList[0].temperature, self.locationList[0].conductivity, self.locationList[0].pressure, self.locationList[0].watersurface, self.locationList[0].flowrate)
+
+			try:
+				log_data("SDG_bl/thread_script", "Inserted data into database")
+			except Exception, e:
+				print e
+
 	# Threading frame
-	def run_indef(self):
+	def thread_init(self):
 		try:
 			# Set the target function and arguments for thread
-			self.threads = Thread(target = self.thread_script, args = (1, ))
+			self.threads = Thread(target = self.meterwell_thread, args = (1, ))
 
 			self.threads.start()
 
@@ -123,21 +150,14 @@ class SimDataGen(object):
 		except Exception, e:
 			print e
 
-	# Function called from main program
-	def start_sdg(self, runmode):
-		# Do not allow id's below 1000 to be used
-		if (self.id_range_start > 999):
+	# Function called from SDG_main
+	def start_sdg(self):
 
-			self.cas_conn.establish_connection()
+		# Connect to database
+		self.cas_conn.establish_connection()
 
-			if (runmode == 1):
-				self.run_by_idrange()
-			elif (runmode == 2):
-				self.run_indef()
-			else:
-				print "Logic Error: other runmodes under construction"
+		self.locationList.append(MeterWell(1, 1, "test", 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1))
 
-			con_success = self.cas_conn.get_connection()
-			
-		else:
-			print "Logic Error: ID range too small!"
+		self.thread_init()
+
+		con_success = self.cas_conn.get_connection()

@@ -33,6 +33,12 @@ class MeterWell(object):
 	#Methods
 
 	# Getters & Setters
+	def get_wellid(self):
+		return self.wellid
+
+	def get_parent(self):
+		return self.parent
+
 	def get_name(self):
 		return self.name
 

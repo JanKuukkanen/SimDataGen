@@ -81,7 +81,7 @@ class DatabaseSession(object):
 		else:
 			print "Database Error: Failed to insert data to database!"
 
-	def send_wellmeter_data(self, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
+	def send_meterwell_data(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):
 			try:
 				table = modl.get_table()
@@ -90,7 +90,7 @@ class DatabaseSession(object):
 				if (id_same == True):
 					self.session.execute("UPDATE " + table + " SET nimi = (%s), east = (%s), north = (%s), korkeus_merenpinnasta = (%s), lampotila = (%s), ominaissahkojohtavuus = (%s), paine = (%s), vedenpinta = (%s), virtausnopeus = (%s) WHERE id = (%s)", (nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus, c_id))
 				elif (id_same == False):
-					self.session.execute("INSERT INTO " + table + " (id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (c_id, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus))
+					self.session.execute("INSERT INTO " + table + " (id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus))
 				else:
 					print "Database Error: Somethin's gone all wrong"
 

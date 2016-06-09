@@ -6,35 +6,37 @@ import sys
 
 try:
 	loop = None
+	sdg_started = False
 
 	if not os.path.lexists("/var/log/SimDataGen"):
 		os.makedirs("/var/log/SimDataGen")
 
-	answer = raw_input("Enter thread number: ")
-
-	if (answer == "1"):
-		# Initialize SimDataGen object
-		sdg = SimDataGen(1000, 1019, 30)
-
-		sdg.start_sdg(2)
-
-	elif (answer == "2"):
-		sdg = SimDataGen(1010, 1010, 30)
-
-		sdg.start_sdg(2)
+	# Initialize SimDataGen object
+	sdg = SimDataGen(10)
 
 	while (loop != "exit"):
-		option = raw_input("Enter 1 to change delay speed or enter 0 to close the program: ")
+		option = raw_input("Enter 1 to start SimDataGen, 2 to change delay speed or enter 0 to close the program: ")
 
 		if (option == "1"):
-			delay_time = raw_input("Enter delay speed: ")
+			sdg.start_sdg()
 
-			print delay_time, "\n"
+			sdg_started = True
 
-			sdg.set_delay_time(delay_time)
+		elif (option == "2"):
+			if (sdg_started == True):
+				delay_time = raw_input("Enter delay speed: ")
+
+				print delay_time, "\n"
+
+				sdg.set_delay_time(delay_time)
+			else:
+				print "SimDataGen has not been started"
 
 		elif (option == "0"):
-			loop = "exit"
+			if (sdg_started == True):
+				loop = "exit"
+			else:
+				print "SimDataGen has not been started"
 
 	sdg.database_close()
 	
