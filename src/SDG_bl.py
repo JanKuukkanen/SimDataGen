@@ -1,6 +1,7 @@
 # SimDataGen Business logic layer
 
 from database_connect import DatabaseSession
+from measurement_location import MeterWell
 import sys
 from threading import Thread
 from time import sleep
