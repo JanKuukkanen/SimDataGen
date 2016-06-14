@@ -18,7 +18,7 @@ class MeterWell(object):
 	well_level = None
 	# Kaivon halkaisija
 	well_diameter = None
-	# Virtausnopeus
+	# Virtaustilavuus (tietokannassa virtausnopeus)
 	flowrate = None
 	# Vedenpinta
 	watersurface = None
@@ -58,6 +58,7 @@ class MeterWell(object):
 		self.out_flow_well = out_flow_well
 		self.inc_pipe_loc.extend([xi, yi])
 		self.out_pipe_loc.extend([xo, yo])
+		self.well_diameter = 0.8
 
 		self.inc_pipe_d=160.0/1000
 		self.out_pipe_d=160.0/1000
@@ -143,9 +144,9 @@ class MeterWell(object):
 	# Measurement calculations
 
 	# Counting a single flowrate, ha=starting height, hb=ending height
-	def virtausnopeus(ha, hb, x):
+	def virtausnopeus(self, ha, hb, x):
 		v = ha - hb
-		k = kulmaprosentti(v, x)
+		k = self.kulmaprosentti(v, x)
 		if (v<0): # if the subtraction is negative, we're dealing with a pressure pipe
 			if (0<k and 25>=k):
 				return int(random.randrange(7, 8))/10
@@ -164,7 +165,7 @@ class MeterWell(object):
 				return 0.8
 
     # Counting the angle from 90 degrees
-	def kulmaprosentti(v, x):
+	def kulmaprosentti(self, v, x):
 		if (0>v):
 			neg = -1
 			y = neg * v
@@ -186,7 +187,6 @@ class MeterWell(object):
 
     # Height of the waters surface, t=time, r=diameter of the pipe, v=volume flow rate
 	def pinta(self, t, r, v):
-		print "\n pinta tilastot: ", t, r, v, "\n"
 		pii = math.pi
 		x = v * t
 		y = pii * r * r
@@ -213,27 +213,30 @@ class MeterWell(object):
 
 		# Incoming pipes length
 		xa = self.etaisyys(self.inc_pipe_loc[0], self.inc_pipe_loc[1], self.eastloc, self.northloc)
-		xb = self.etaisyys(self.eastloc, self.northloc, out_pipe_loc[0], out_pipe_loc[1])
+		xb = self.etaisyys(self.eastloc, self.northloc, self.out_pipe_loc[0], self.out_pipe_loc[1])
 
 		a = self.well_level
 		d = self.well_diameter
+		c = self.inc_flow_well
+		b = self.out_flow_well
+
 		# Incoming flows to the well
-		if (inc_flow_well == 0):
+		if (c == 0):
 			sisaan_v = float(random.randrange(7, 13))/10
 		else:
 			koulu = int(random.randrange(0, 5))/10
-			sisaan_v = virtausnopeus(c,a,xa)+fu+koulu
+			sisaan_v = self.virtausnopeus(c,a,(xa)) + fu + koulu
 
-		tilavuus_sisaan = float(self.virtaustilavuus(inc_pipe_d, sisaan_v))
+		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
 		# Outgoing flows from the well
-		if (out_flow_well != 0):
-			ulos_v = virtausnopeus(a, b, xb)+f
-			tilavuus_ulos = float(self.virtaustilavuus(out_pipe_d, ulos_v))
+		if (b != 0):
+			ulos_v = self.virtausnopeus(a, b, xb)+f
+			tilavuus_ulos = float(self.virtaustilavuus(self.out_pipe_d, ulos_v))
 
 		# Water surface level
-		r = d/2
-		h = float(pinta(t, r, v))
-		if (0 < h):
-			return h
+		if (b != 0):
+			self.flowrate = tilavuus_sisaan - tilavuus_ulos
 		else:
-			return 0
+			self.flowrate = tilavuus_sisaan
+		r = d/2
+		self.watersurface = float(self.pinta(t, r, self.flowrate))

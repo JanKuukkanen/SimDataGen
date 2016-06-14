@@ -5,6 +5,7 @@ from measurement_location import MeterWell
 import sys
 from threading import Thread
 from time import sleep
+import time
 from data_format import *
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -30,64 +31,34 @@ class SimDataGen(object):
 
 	#Methods
 
-	# Threading function
-	def thread_script(self, arg):
-		id_same = False
-		increment = 1
-		current_id = self.id_range_start
+	def calculations(self, i, t, former_f):
+		# calculations for all locations in locationlist
+		f_next = self.locationList[i].tyonto(1)
 
-		# Get all id's from the database so we can compare them to the current id
-		db_ids = self.cas_conn.fetch_ids()
+		self.locationList[i].set_pressure(f_next)
 
-		self.threading_is = True
+		self.locationList[i].countWaterLevel(int(t), self.locationList[i].pressure, former_f)
 
-		while (self.threading_is == True):
+		try:
+			log_data("SDG_bl/calculations", "made calculations to location: " + self.locationList[i].name + ", time: " + str(t), False)
+		except Exception, e:
+			print e
 
-			delay_done = False
-			# Suspend execution for 5 seconds
-			sleep(self.delay_time)
-
-			current_id = self.id_range_start
-
-			while (delay_done == False):
-				# Check if we should increase or decrease waterlevel to create a wave
-				if (self.waterlevel == 30):
-					increment = 1
-				elif (self.waterlevel == 40):
-					increment = -1
-
-				# Check if our current id already exists in the database
-				for user_id in db_ids:
-					if (current_id == user_id):
-						id_same = True
-					else:
-						id_same = False
-
-				self.time = get_time_format()
-
-				self.cas_conn.send_current(id_same, current_id, self.waterlevel, self.time)
-
-				try:
-					log_data("SDG_bl/thread_script", "Inserted data into database", False)
-				except Exception, e:
-					print e
-
-				# Increment waterlevel
-				self.waterlevel = self.waterlevel + increment
-
-				# End inner loop if current_id is at the end of the id range
-				if (current_id == self.id_range_end):
-					delay_done = True
-				else:
-					current_id = current_id + 1
+		return f_next
 
 	# Threading function
 	def meterwell_thread(self, arg):
 		id_same = False
 		i = 0
+		former_f = 0
 
 		# Get all id's from the database so we can compare them to the current id
 		db_ids = self.cas_conn.fetch_ids()
+
+		# Start timer
+		start_time = time.time()
+
+		t = 1
 
 		self.threading_is = True
 
@@ -102,6 +73,8 @@ class SimDataGen(object):
 
 				current_id = self.locationList[i].get_wellid()
 
+				receive_f = self.calculations(i, t, former_f)
+
 				# Check if our current id already exists in the database
 				for user_id in db_ids:
 					if (current_id == user_id):
@@ -114,11 +87,13 @@ class SimDataGen(object):
 				self.cas_conn.send_meterwell_data(id_same, current_id, self.locationList[i].name, self.locationList[i].eastloc, self.locationList[i].northloc, self.locationList[i].well_level, self.locationList[i].temperature, self.locationList[i].conductivity, self.locationList[i].pressure, self.locationList[i].watersurface, self.locationList[i].flowrate)
 
 				try:
-					log_data("SDG_bl/thread_script", "Inserted data into database", False)
+					log_data("SDG_bl/thread_script", "Inserted location " + self.locationList[i].name + " to the database. Virtausnopeus: " + str(self.locationList[i].flowrate), False)
 				except Exception, e:
 					print e
 
+				former_f = receive_f
 				i = i + 1
+				t = time.time() - start_time
 
 	# Threading frame
 	def thread_init(self):
