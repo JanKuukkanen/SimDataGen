@@ -5,6 +5,7 @@
 
 import math
 import random
+from data_format import *
 
 class MeterWell(object):
 
@@ -60,8 +61,8 @@ class MeterWell(object):
 		self.out_pipe_loc.extend([xo, yo])
 		self.well_diameter = 0.8
 
-		self.inc_pipe_d=160.0/1000
-		self.out_pipe_d=160.0/1000
+		self.inc_pipe_d=0.2
+		self.out_pipe_d=0.2
 
 	#Methods
 
@@ -120,8 +121,8 @@ class MeterWell(object):
 	def get_pressure(self):
 		return self.pressure
 
-	def set_pressure(self, pressure):
-		self.pressure = pressure
+	def set_pressure(self, pressure1):
+		self.pressure = pressure1
 
 	def get_out_pipe_loc(self):
 		return self.out_pipe_loc
@@ -168,7 +169,8 @@ class MeterWell(object):
 	def kulmaprosentti(self, v, x):
 		if (0>v):
 			neg = -1
-			y = neg * v
+			pro = neg * v
+			y = 90 - pro
 		else:
 			y = v
 		z = y / x
@@ -191,15 +193,26 @@ class MeterWell(object):
 		x = v * t
 		y = pii * r * r
 		h = x / y
+
 		return h
 
-    # Push from the well, h=height difference from the fluid surface of the highest well
-	def tyonto(self, h):
-		if(h<0):
-			g = 981.0/100
-			y = 2.0*g*h
-			x = math.sqrt(y)
-			return x
+	# Push from the well, h=height difference from the fluid surface of the highest well
+	def tyonto(self):
+		h = self.watersurface
+		if(0<h):
+			g = 9.81
+			q = int(random.randrange(4, 5))/10
+			y = q*g*h
+			y = y*100
+			x = int(math.sqrt(y))
+			x = x/100
+
+			log_data("Measurement_location/tyonto", "Q: " + str(q) + ", Y: " + str(y) + ", X: " + str(x), False)
+
+			if (0.3<x):
+				self.pressure = 0.3
+			else:
+				self.pressure = x
 		else:
 			return 0
 
@@ -209,7 +222,7 @@ class MeterWell(object):
 		z = pii*d*d*v
 		return z/4
 
-	def countWaterLevel(self, t, f, fu):
+	def countWaterLevel(self, t, f, fu, last):
 
 		# Incoming pipes length
 		xa = self.etaisyys(self.inc_pipe_loc[0], self.inc_pipe_loc[1], self.eastloc, self.northloc)
@@ -223,20 +236,38 @@ class MeterWell(object):
 		# Incoming flows to the well
 		if (c == 0):
 			sisaan_v = float(random.randrange(7, 13))/10
+			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v), False)
 		else:
 			koulu = int(random.randrange(0, 5))/10
-			sisaan_v = self.virtausnopeus(c,a,(xa)) + fu + koulu
+			sisaan_v = self.virtausnopeus(c,a,xa) + fu + koulu
+			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v) + ", former_pressure: " + str(fu), False)
 
 		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
 		# Outgoing flows from the well
-		if (b != 0):
+		if (b > 0):
 			ulos_v = self.virtausnopeus(a, b, xb)+f
 			tilavuus_ulos = float(self.virtaustilavuus(self.out_pipe_d, ulos_v))
 
 		# Water surface level
-		if (b != 0):
+		if (b > 0):
 			self.flowrate = tilavuus_sisaan - tilavuus_ulos
 		else:
 			self.flowrate = tilavuus_sisaan
 		r = d/2
-		self.watersurface = float(self.pinta(t, r, self.flowrate))
+		muutos = float(self.pinta(t, r, self.flowrate))
+		syvyys = self.watersurface + muutos
+
+		log_data("Measurement_location/countWaterLevel", "Pressure: " + str(self.pressure) + ", Flowrate: " + str(self.flowrate), False)
+
+		if (last == True):
+			if (syvyys < 0):
+				self.watersurface = 0
+			elif (syvyys > 0 and 2.2 >= syvyys):
+				self.watersurface = syvyys
+			else:
+				self.watersurface = 2.2
+		else:
+			if (0 < syvyys):
+				self.watersurface = syvyys
+			else:
+				self.watersurface = 0

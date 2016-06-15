@@ -23,7 +23,7 @@ class SimDataGen(object):
 	cas_conn = DatabaseSession()
 
 	#Constructor
-	def __init__(self, delay_time=60):
+	def __init__(self, delay_time=5):
 
 		self.time = get_time_format()
 		self.delay_time = delay_time
@@ -31,18 +31,15 @@ class SimDataGen(object):
 
 	#Methods
 
-	def calculations(self, i, t, former_f):
+	def calculations(self, i, t, former_f, last):
 		# calculations for all locations in locationlist
-		f_next = self.locationList[i].tyonto(1)
+		self.locationList[i].tyonto()
 
-		self.locationList[i].set_pressure(f_next)
+		f_next = self.locationList[i].get_pressure()
 
-		self.locationList[i].countWaterLevel(int(t), self.locationList[i].pressure, former_f)
+		self.locationList[i].countWaterLevel(t, self.locationList[i].pressure, former_f, last)
 
-		try:
-			log_data("SDG_bl/calculations", "made calculations to location: " + self.locationList[i].name + ", time: " + str(t), False)
-		except Exception, e:
-			print e
+		log_data("SDG_bl/calculations", "made calculations to location: " + self.locationList[i].name + ", time: " + str(t), False)
 
 		return f_next
 
@@ -50,13 +47,10 @@ class SimDataGen(object):
 	def meterwell_thread(self, arg):
 		id_same = False
 		i = 0
-		former_f = 0
+		former_f = 0.0
 
 		# Get all id's from the database so we can compare them to the current id
 		db_ids = self.cas_conn.fetch_ids()
-
-		# Start timer
-		start_time = time.time()
 
 		t = 1
 
@@ -69,11 +63,18 @@ class SimDataGen(object):
 
 			i = 0
 
+			t = t*10
+			sekunnit = t + 1
+			t = t / 10
+
 			while (i < len(self.locationList)):
 
 				current_id = self.locationList[i].get_wellid()
 
-				receive_f = self.calculations(i, t, former_f)
+				if (i + 1 == len(self.locationList)):
+					receive_f = self.calculations(i, t, former_f, True)
+				else:
+					receive_f = self.calculations(i, t, former_f, False)
 
 				# Check if our current id already exists in the database
 				for user_id in db_ids:
@@ -86,14 +87,14 @@ class SimDataGen(object):
 
 				self.cas_conn.send_meterwell_data(id_same, current_id, self.locationList[i].name, self.locationList[i].eastloc, self.locationList[i].northloc, self.locationList[i].well_level, self.locationList[i].temperature, self.locationList[i].conductivity, self.locationList[i].pressure, self.locationList[i].watersurface, self.locationList[i].flowrate)
 
-				try:
-					log_data("SDG_bl/thread_script", "Inserted location " + self.locationList[i].name + " to the database. Virtausnopeus: " + str(self.locationList[i].flowrate), False)
-				except Exception, e:
-					print e
+				log_data("SDG_bl/thread_script", "Inserted location " + self.locationList[i].name + " to the database. Vedenpinta: " + str(self.locationList[i].watersurface), False)
 
-				former_f = receive_f
+				former_f = self.locationList[i].get_pressure()
+
+				log_data("SDG_bl/thread_script", "Former pressure: " + str(former_f) + ", Current pressure: " + str(self.locationList[i].get_pressure()), False)
+
 				i = i + 1
-				t = time.time() - start_time
+
 
 	# Threading frame
 	def thread_init(self):
@@ -103,10 +104,7 @@ class SimDataGen(object):
 
 			self.threads.start()
 
-			try:
-				log_data("SDG_bl/run_indef", "Started thread", False)
-			except Exception, e:
-				print e
+			log_data("SDG_bl/run_indef", "Started thread", False)
 
 		except Exception as e:
 			print e
@@ -123,18 +121,13 @@ class SimDataGen(object):
 		# Close database connection
 		self.cas_conn.close_connection()
 
-		try:
-			log_data("SDG_bl/database_close", "Closed database", False)
-		except Exception, e:
-			print e
+		log_data("SDG_bl/database_close", "Closed database", False)
 
 	def set_delay_time(self, delay_time):
 		
 		self.delay_time = int(delay_time)
-		try:
-			log_data("SDG_bl/set_delay_time", "Altered delay time", False)
-		except Exception, e:
-			print e
+
+		log_data("SDG_bl/set_delay_time", "Altered delay time", False)
 
 	def check_database_connection(self):
 		connection = self.cas_conn.get_connection()
@@ -149,10 +142,7 @@ class SimDataGen(object):
 
 		self.locationList.append(MeterWell(0, "test", 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1))
 
-		try:
-			log_data("SDG_bl/start_test", "Simulation test started", True)
-		except Exception, e:
-			print e
+		log_data("SDG_bl/start_test", "Simulation test started", True)
 
 		self.thread_init()
 
@@ -177,9 +167,6 @@ class SimDataGen(object):
 		self.locationList.append(MeterWell(80, "loc-9", 36, 0, 3, 4, 5, 34, 0, 51, 7))
 		self.locationList.append(MeterWell(90, "loc-10", 51, 7, 6, 3, 0, 36, 0, 0, 0))
 
-		try:
-			log_data("SDG_bl/start_simulation", "Added 10 locations", True)
-		except Exception, e:
-			print e
+		log_data("SDG_bl/start_simulation", "Added 10 locations", True)
 
 		self.thread_init()
