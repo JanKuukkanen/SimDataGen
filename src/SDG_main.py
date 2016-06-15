@@ -6,37 +6,54 @@ import sys
 
 try:
 	loop = None
+	sdg_started = False
 
 	if not os.path.lexists("/var/log/SimDataGen"):
 		os.makedirs("/var/log/SimDataGen")
 
-	answer = raw_input("Enter thread number: ")
+	# Initialize SimDataGen object
+	sdg = SimDataGen(10)
 
-	if (answer == "1"):
-		# Initialize SimDataGen object
-		sdg = SimDataGen(1000, 1019, 30)
-
-		sdg.start_sdg(2)
-
-	elif (answer == "2"):
-		sdg = SimDataGen(1010, 1010, 30)
-
-		sdg.start_sdg(2)
+	print "****************************************************\n"
+	print "*                                                  *\n"
+	print "*                   Welcome                        *\n"
+	print "*                     to                           *\n"
+	print "*                 SimDataGen                       *\n"
+	print "*                                                  *\n"
+	print "****************************************************\n"
 
 	while (loop != "exit"):
-		option = raw_input("Enter 1 to change delay speed or enter 0 to close the program: ")
+		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" + "3 to start SimDataGen sewer system simulation\n" + "0 to close the program\n" + "simdatagen>>")
 
 		if (option == "1"):
-			delay_time = raw_input("Enter delay speed: ")
+			sdg.start_test()
 
-			print delay_time, "\n"
+			sdg_started = True
 
-			sdg.set_delay_time(delay_time)
+		elif (option == "2"):
+			if (sdg_started == True):
+				delay_time = raw_input("Enter delay speed: ")
+
+				print delay_time, "\n"
+
+				sdg.set_delay_time(delay_time)
+			else:
+				print "SimDataGen has not been started"
+
+		elif (option == "3"):
+			sdg.start_simulation()
+
+			sdg_started = True
 
 		elif (option == "0"):
-			loop = "exit"
+				loop = "exit"
 
-	sdg.database_close()
+		else:
+			print "Enter a valid number!"
+
+	connection = sdg.check_database_connection()
+	if (connection == True):
+		sdg.database_close()
 	
 	sys.exit()
 

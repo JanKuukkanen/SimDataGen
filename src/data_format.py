@@ -9,8 +9,14 @@ def get_time_format():
 
 	return time
 
-def log_data(location, message):
-	text_file = open("/var/log/SimDataGen/log.txt", "a")
-	date = get_time_format()
-	text_file.write("\n" + date + " \n " + message + " in " + location + "\n------------------------------")
-	text_file.close()
+def log_data(location, message, overwrite):
+	try:
+		if (overwrite == True):
+			text_file = open("/var/log/SimDataGen/log.txt", "w")
+		else:
+			text_file = open("/var/log/SimDataGen/log.txt", "a")
+		date = get_time_format()
+		text_file.write("\n" + date + " \n " + message + " in " + location + "\n------------------------------")
+		text_file.close()
+	except Exception as e:
+		print e
