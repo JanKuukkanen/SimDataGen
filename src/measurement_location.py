@@ -42,8 +42,15 @@ class MeterWell(object):
 	# Outgoing pipe length (x, y) (I, P)
 	out_pipe_loc = []
 
+	# Type of well
+	# 1 = incoming 0.2, outgoing 0.2
+	# 2 = incoming 0.2, outgoing 0.16
+	# 3 = incoming 0.16, outgoing 0.2
+	# 4 = incoming 0.16, outgoing 0.16
+	welltype = None
+
 	#Constructor
-	def __init__(self, wellid, name="", eastloc=1.0, northloc=1.0, well_level=0.0, inc_flow_well=0, out_flow_well=0, xi=0, yi=0, xo=0, yo=0):
+	def __init__(self, wellid, name="", eastloc=1.0, northloc=1.0, well_level=0.0, inc_flow_well=0, out_flow_well=0, xi=0, yi=0, xo=0, yo=0, welltype=1):
 
 		self.wellid = wellid
 		self.name = name
@@ -63,6 +70,8 @@ class MeterWell(object):
 
 		self.inc_pipe_d=0.2
 		self.out_pipe_d=0.2
+
+		self.welltype = welltype
 
 	#Methods
 
@@ -142,28 +151,43 @@ class MeterWell(object):
 	def set_well_diameter(self, well_diameter):
 		self.well_diameter = well_diameter
 
+	# Set incoming and outgoing pipe diameters for the well according to well type
+	def set_pipe_diameters(self):
+		if (self.welltype == 2):
+			self.inc_pipe_d = 0.2
+			self.out_pipe_d = 0.16
+
+		elif (self.welltype == 3):
+			self.inc_pipe_d = 0.16
+			self.out_pipe_d = 0.2
+
+		elif (self.welltype == 4):
+			self.inc_pipe_d = 0.16
+			self.out_pipe_d = 0.16
+
+
 	# Measurement calculations
 
 	# Counting a single flowrate, ha=starting height, hb=ending height
 	def virtausnopeus(self, ha, hb, x):
 		v = ha - hb
 		k = self.kulmaprosentti(v, x)
-		if (v<0): # if the subtraction is negative, we're dealing with a pressure pipe
-			if (0<k and 25>=k):
-				return int(random.randrange(7, 8))/10
-			if (25<k and 50>=k):
-				return int(random.randrange(9, 10))/10
-			if (50<k and 75>=k):
-				return int(random.randrange(11, 12))/10
-			else:
-				return 1.3  
-		else: # if the subtraction is positive, we're dealing with a flow pipe
+		if (v<0): #jos erotus on miinusmerkkistä, kyse on paineputkesta
+			#return int(random.randrange(7, 13))/10
 			if (0<k and 33>=k):
-				return int(random.randrange(4, 5))/10
+				return float(random.randrange(8, 9))/10
 			if (33<k and 66>=k):
-				return int(random.randrange(6, 7))/10
+				return float(random.randrange(6, 7))/10
 			else:
-				return 0.8
+				return 0.5
+		else: #jos erotus on positiivista, kyse on kaatoputkesta
+			#return int(random.randrange(4, 8))/10
+			if (0<k and 33>=k):
+				return float(random.randrange(30, 39))/100
+			if (33<k and 66>=k):
+				return float(random.randrange(4, 5))/10
+			else:
+				return 0.6
 
     # Counting the angle from 90 degrees
 	def kulmaprosentti(self, v, x):
@@ -201,11 +225,11 @@ class MeterWell(object):
 		h = self.watersurface
 		if(0<h):
 			g = 9.81
-			q = int(random.randrange(4, 5))/10
+			q = float(random.randrange(4, 5))/10
 			y = q*g*h
 			y = y*100
 			x = int(math.sqrt(y))
-			x = x/100
+			x = float(x)/100
 
 			log_data("Measurement_location/tyonto", "Q: " + str(q) + ", Y: " + str(y) + ", X: " + str(x), False)
 
@@ -214,7 +238,7 @@ class MeterWell(object):
 			else:
 				self.pressure = x
 		else:
-			return 0
+			self.pressure = 0.0
 
     #Volumetric flow rate, d=pipe diameter, v=flow velocity
 	def virtaustilavuus(self, d, v):
@@ -238,8 +262,7 @@ class MeterWell(object):
 			sisaan_v = float(random.randrange(7, 13))/10
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v), False)
 		else:
-			koulu = int(random.randrange(0, 5))/10
-			sisaan_v = self.virtausnopeus(c,a,xa) + fu + koulu
+			sisaan_v = self.virtausnopeus(c,a,xa) + fu
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v) + ", former_pressure: " + str(fu), False)
 
 		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
