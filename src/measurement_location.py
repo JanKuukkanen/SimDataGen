@@ -50,7 +50,7 @@ class MeterWell(object):
 	welltype = None
 
 	#Constructor
-	def __init__(self, wellid, name="", eastloc=1.0, northloc=1.0, well_level=0.0, inc_flow_well=0, out_flow_well=0, xi=0, yi=0, xo=0, yo=0, welltype=1):
+	def __init__(self, wellid, name="", eastloc=1.0, northloc=1.0, well_level=0.0, inc_flow_well=0, out_flow_well=0, xi=0, yi=0, xo=0, yo=0, welltype=4):
 
 		self.wellid = wellid
 		self.name = name
@@ -153,7 +153,11 @@ class MeterWell(object):
 
 	# Set incoming and outgoing pipe diameters for the well according to well type
 	def set_pipe_diameters(self):
-		if (self.welltype == 2):
+		if (self.welltype == 1):
+			self.inc_pipe_d = 0.2
+			self.out_pipe_d = 0.2
+
+		elif (self.welltype == 2):
 			self.inc_pipe_d = 0.2
 			self.out_pipe_d = 0.16
 
@@ -259,7 +263,7 @@ class MeterWell(object):
 
 		# Incoming flows to the well
 		if (c == 0):
-			sisaan_v = float(random.randrange(7, 13))/10
+			sisaan_v = float(random.randrange(6, 8))/10
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v), False)
 		else:
 			sisaan_v = self.virtausnopeus(c,a,xa) + fu

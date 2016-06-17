@@ -62,24 +62,39 @@ class DatabaseSession(object):
 			except Exception, e:
 				print "Database Error: ", e
 
-	# Insert or update data regarding the water current to the database
-	def send_current(self, id_same, current_id, waterlevel, fetched_time):
-		# do not allow id's below 1000 to be used
+	def fetch_watersurface(self):
 		if (self.connection == True):
 			try:
 				table = modl.get_table()
-				# Update row if current id already exists or insert new id if it does not
-				if (id_same == True):
-					self.session.execute("UPDATE " + table +" SET waterlevel = (%s), time = (%s) WHERE id = (%s)",(waterlevel, fetched_time, current_id))
-				elif (id_same == False):
-					self.session.execute("INSERT INTO " + table + " (id, time, waterlevel) VALUES (%s, %s, %s)", (current_id, fetched_time, waterlevel))
-				else:
-					print "Database Error: Something has gone terribly wrong"
+
+				watersurfaces = self.session.execute('SELECT vedenpinta FROM ' + table)
+				return watersurfaces
 
 			except Exception as e:
-				print e
-		else:
-			print "Database Error: Failed to insert data to database!"
+				print "Database Error: ", e
+
+	def fetch_rowcount(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				rows = self.session.execute('SELECT COUNT(*) FROM ' + table)
+
+				return rows[0]
+
+			except Exception as e:
+				print "Database Error: ", e
+
+	def fetch_name(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				names = self.session.execute('SELECT nimi FROM ' + table)
+				return names
+				
+			except Exception as e:
+				print "Database Error: ", e
 
 	def send_meterwell_data(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):

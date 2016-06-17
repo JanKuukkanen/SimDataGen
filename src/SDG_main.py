@@ -23,7 +23,8 @@ try:
 	print "****************************************************\n"
 
 	while (loop != "exit"):
-		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" + "3 to start SimDataGen sewer system simulation\n" + "0 to close the program\n" + "simdatagen>>")
+		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" +
+							"3 to start SimDataGen sewer system simulation\n" + "4 to start simulation animation\n" + "0 to close the program\n" + "simdatagen>>")
 
 		if (option == "1"):
 			sdg.start_test()
@@ -44,6 +45,12 @@ try:
 			sdg.start_simulation()
 
 			sdg_started = True
+
+		elif (option == "4"):
+			if (sdg_started == True):
+				sdg.run_animation()
+			else:
+				print "SimDataGen has not been started"
 
 		elif (option == "0"):
 				loop = "exit"

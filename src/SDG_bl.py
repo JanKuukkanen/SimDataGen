@@ -18,6 +18,7 @@ class SimDataGen(object):
 	threads = None
 	delay_time = 1
 	locationList = []
+	ax1 = None
 	
 	# Initialize database object
 	cas_conn = DatabaseSession()
@@ -63,9 +64,10 @@ class SimDataGen(object):
 
 			i = 0
 
-			t = t*10
-			sekunnit = t + 1
-			t = t / 10
+			if (t != 36):
+				t = t + 0.01
+			else:
+				t = 1.0
 
 			while (i < len(self.locationList)):
 
@@ -147,6 +149,84 @@ class SimDataGen(object):
 		self.thread_init()
 
 		con_success = self.cas_conn.get_connection()
+
+	def animate(self, i):
+		pullData = self.cas_conn.fetch_watersurface()
+		pullName = self.cas_conn.fetch_name()
+		rowcount = self.cas_conn.fetch_rowcount()
+		nameList = [None] * rowcount[0]
+		errList = [None] * rowcount[0]
+		resultList = [None] * rowcount[0]
+		correctresList = [None] * rowcount[0]
+		xar = []
+		yar = []
+
+		xar.append(0)
+		yar.append(0)
+
+		log_data("SDG_bl/animate", "resultList: " + str(resultList) + ", nameList: " + str(nameList), False)
+
+		# Sort nameList in the correct order and fill errList with the incorrect order existing in the database
+		t = 0
+		for eachName in pullName:
+
+			errList[t] = str(eachName[0])
+
+			u = 0
+			while (u <= rowcount[0]):
+				locName = "loc-" + str(u)
+
+				if (eachName[0] == locName):
+					nameList[u - 1] = str(eachName[0])
+				u = u + 1
+
+			log_data("SDG_bl/animate", "NameList in progress: " + str(nameList), False)
+			t = t + 1
+
+		log_data("SDG_bl/animate", "NameList: " + str(nameList) + " Error list: " + str(errList), False)
+
+		# Compare nameList and errList to sort resultList in the correct order
+		t = 0
+		for eachLine in pullData:
+
+			u = 0
+			while (u < rowcount[0]):
+				
+				if (errList[t] == nameList[u]):
+
+					correctresList[u] = eachLine[0]
+				
+				u = u + 1
+
+			log_data("SDG_bl/animate", "Resultlist in progress: " + str(correctresList), False)
+			t = t + 1
+
+		log_data("SDG_bl/animate", "correctresList: " + str(correctresList) + ", nameList: " + str(nameList), False)
+
+		o = 0
+		i = 1
+		while (o < rowcount[0]):
+
+			#resultList[o] = resultList[o] * 100
+
+			xar.append(i)
+			yar.append(correctresList[o])
+			log_data("SDG_bl/animate", "Location name: " + str(nameList[o]) + ", Result: " + str(correctresList[o]), False)
+			i = i + 1
+			o = o + 1
+
+		self.ax1.clear()
+		self.ax1.plot(xar, yar)
+
+
+	# Function for fetching data from the database and displaying it at set intervals
+	def run_animation(self):
+
+		# start matplotlib figure
+		fig = plt.figure()
+		self.ax1 = fig.add_subplot(1,1,1)
+		ani = animation.FuncAnimation(fig, self.animate, interval=1000) # update every second
+		plt.show()
 
 	# Function for starting the simulation for 10 different measurement wells
 	def start_simulation(self):
