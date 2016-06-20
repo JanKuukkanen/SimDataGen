@@ -9,6 +9,7 @@ import time
 from data_format import *
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import re
 
 class SimDataGen(object):
 
@@ -136,6 +137,85 @@ class SimDataGen(object):
 		
 		return connection
 
+	def check_location(self, selected_loc):
+		i = 0
+		check_result = False
+		while (i <= len(self.locationList)):
+			if (int(selected_loc) == i):
+				check_result = True
+			i = i + 1
+				
+		return check_result
+
+	def show_locations(self):
+		i = 0
+		while (i < len(self.locationList)):
+			print str(i) + ". " + str(self.locationList[i].get_name()) + "\n"
+			i = i + 1
+
+	def check_parameters(self, selected_parameter):
+		i = 0
+		check_result = False
+		while (i <= 5):
+			if (int(selected_parameter) == i):
+				check_result = True
+			i = i + 1
+
+		return check_result
+
+	def show_parameters(self):
+		print "0. Name\n1. East location\n2. North location\n3. Well level\n4. Incoming well\n5. Outgoinging well"
+
+	# Chnge the name of a well location
+	def change_name(self, selected_loc):
+		pattern = "loc-[0-9]{1,}"
+		answer = raw_input("Enter new name (format: loc-[number]): ")
+		if (re.search(pattern, answer)):
+			self.locationList[int(selected_loc)].set_name(answer)
+		else:
+			print "Enter a valid name!"
+
+	# Change the location information of an incoming well
+	def change_incoming_well(self, selected_loc):
+		answer = raw_input("Enter new incoming well level: ")
+		self.locationList[int(selected_loc)].set_inc_flow_well(int(answer))
+
+		answerE = raw_input("Enter new incoming well east location: ")
+		answerN = raw_input("Enter new incoming well north location: ")
+		self.locationList[int(selected_loc)].set_inc_pipe_loc(int(answerE), int(answerN))
+
+	# Change the lcation information of an outgoing well
+	def change_outgoing_well(self, selected_loc):
+		answer = raw_input("Enter new incoming well level: ")
+		self.locationList[int(selected_loc)].set_out_flow_well(int(answer))
+
+		answerE = raw_input("Enter new incoming well east location: ")
+		answerN = raw_input("Enter new incoming well north location: ")
+		self.locationList[int(selected_loc)].set_out_pipe_loc(int(answerE), int(answerN))
+
+	# Change well parameters
+	def change_parameter(self, selected_loc, selected_parameter):
+		if (selected_parameter == "0"):
+			self.change_name(selected_loc)
+
+		elif (selected_parameter == "1"):
+			answer = raw_input("Enter new east location: ")
+			self.locationList[int(selected_loc)].set_eastloc(int(answer))
+
+		elif (selected_parameter == "2"):
+			answer = raw_input("Enter new north location: ")
+			self.locationList[int(selected_loc)].set_northloc(int(answer))
+
+		elif (selected_parameter == "3"):
+			answer = raw_input("Enter new well level: ")
+			self.locationList[int(selected_loc)].set_well_level(int(answer))
+
+		elif (selected_parameter == "4"):
+			self.change_incoming_well(selected_loc)
+
+		elif (selected_parameter == "5"):
+			self.change_outgoing_well(selected_loc)
+
 	# Function called from SDG_main
 	def start_test(self):
 
@@ -203,11 +283,10 @@ class SimDataGen(object):
 
 		log_data("SDG_bl/animate", "correctresList: " + str(correctresList) + ", nameList: " + str(nameList), False)
 
+		# Set the correctly ordered lists together
 		o = 0
 		i = 1
 		while (o < rowcount[0]):
-
-			#resultList[o] = resultList[o] * 100
 
 			xar.append(i)
 			yar.append(correctresList[o])

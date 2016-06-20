@@ -137,19 +137,27 @@ class MeterWell(object):
 		return self.out_pipe_loc
 
 	def set_out_pipe_loc(self, x, y):
-		self.out_pipe_loc.append(x, y)
+		self.out_pipe_loc[0] = x
+		self.out_pipe_loc[1] = y
 
 	def get_inc_pipe_loc(self):
 		return self.inc_pipe_loc
 
 	def set_inc_pipe_loc(self, x, y):
-		self.inc_pipe_loc.append(x, y)
+		self.inc_pipe_loc[0] = x
+		self.inc_pipe_loc[1] = y
 
 	def set_well_level(self, well_level):
 		self.well_level = well_level
 
 	def set_well_diameter(self, well_diameter):
 		self.well_diameter = well_diameter
+
+	def set_inc_flow_well(self, inc_flow_well):
+		self.inc_flow_well = inc_flow_well
+
+	def set_out_flow_well(self, out_flow_well):
+		self.out_flow_well = out_flow_well
 
 	# Set incoming and outgoing pipe diameters for the well according to well type
 	def set_pipe_diameters(self):
