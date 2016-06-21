@@ -269,7 +269,7 @@ class MeterWell(object):
 		c = self.inc_flow_well
 		b = self.out_flow_well
 
-		# Incoming flows to the well
+		# Incoming flow to the well
 		if (c == 0):
 			sisaan_v = float(random.randrange(6, 8))/10
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v), False)
@@ -278,7 +278,7 @@ class MeterWell(object):
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v) + ", former_pressure: " + str(fu), False)
 
 		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
-		# Outgoing flows from the well
+		# Outgoing flow from the well
 		if (b > 0):
 			ulos_v = self.virtausnopeus(a, b, xb)+f
 			tilavuus_ulos = float(self.virtaustilavuus(self.out_pipe_d, ulos_v))

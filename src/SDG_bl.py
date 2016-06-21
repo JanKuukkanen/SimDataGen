@@ -20,6 +20,8 @@ class SimDataGen(object):
 	delay_time = 1
 	locationList = []
 	ax1 = None
+	defaultid = 100
+	defaultname = 11
 	
 	# Initialize database object
 	cas_conn = DatabaseSession()
@@ -30,6 +32,9 @@ class SimDataGen(object):
 		self.time = get_time_format()
 		self.delay_time = delay_time
 		self.locationList = []
+		self.ax1 = None
+		self.defaultid = 100
+		self.defaultname = 11
 
 	#Methods
 
@@ -164,7 +169,7 @@ class SimDataGen(object):
 		return check_result
 
 	def show_parameters(self):
-		print "0. Name\n1. East location\n2. North location\n3. Well level\n4. Incoming well\n5. Outgoinging well"
+		print "0. Name\n1. East location\n2. North location\n3. Well level\n4. Incoming well\n5. Outgoing well"
 
 	# Chnge the name of a well location
 	def change_name(self, selected_loc):
@@ -306,6 +311,14 @@ class SimDataGen(object):
 		self.ax1 = fig.add_subplot(1,1,1)
 		ani = animation.FuncAnimation(fig, self.animate, interval=1000) # update every second
 		plt.show()
+
+	def add_new_well(self, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype):
+
+		name = "loc-" + str(self.defaultname)
+
+		self.locationList.append(MeterWell(self.defaultid, name, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype))
+		self.defaultid = self.defaultid + 1
+		self.defaultname = self.defaultname + 1
 
 	# Function for starting the simulation for 10 different measurement wells
 	def start_simulation(self):

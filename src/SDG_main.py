@@ -25,7 +25,7 @@ try:
 	while (loop != "exit"):
 		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" +
 							"3 to start SimDataGen sewer system simulation\n" + "4 to start simulation animation\n" + "5 to change a location's parameter\n" +
-							"0 to close the program\n" + "simdatagen>> ")
+							"6 to add a new location\n" + "0 to close the program\n" + "simdatagen>> ")
 
 		if (option == "1"):
 			sdg.start_test()
@@ -75,6 +75,46 @@ try:
 
 				else:
 					print "Failed to change location parameter"
+
+			else:
+				print "SimDataGen has not been started"
+
+		elif (option == "6"):
+			if (sdg_started == True):
+				answers = [None] * 10
+				contadd = True
+
+				eastloc = raw_input("Enter east location: ")
+				answers[1] = int(eastloc)
+
+				northloc = raw_input("Enter north location: ")
+				answers[2] = int(northloc)
+
+				well_level = raw_input("Enter well level: ")
+				answers[3] = float(well_level)
+
+				incflow = raw_input("Enter incoming well level: ")
+				answers[4] = int(incflow)
+
+				outflow = raw_input("Enter outgoing well level: ")
+				answers[5] = int(outflow)
+
+				incflowE = raw_input("Enter incoming well east location: ")
+				answers[6] = int(incflowE)
+
+				incflowN = raw_input("Enter incoming well north location: ")
+				answers[7] = int(incflowN)
+
+				outflowE = raw_input("Enter outgoing well east location: ")
+				answers[8] = int(outflowE)
+
+				outflowN = raw_input("Enter outgoing well north location: ")
+				answers[9] = int(outflowN)
+
+				well_type = raw_input("Enter well type: ")
+				answers[0] = int(well_type)
+
+				sdg.add_new_well(answers[1], answers[2], answers[3], answers[4], answers[5], answers[6], answers[7], answers[8], answers[9], answers[0])
 
 			else:
 				print "SimDataGen has not been started"
