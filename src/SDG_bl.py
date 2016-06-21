@@ -312,6 +312,26 @@ class SimDataGen(object):
 		ani = animation.FuncAnimation(fig, self.animate, interval=1000) # update every second
 		plt.show()
 
+	def clear_wells(self):
+		delids = 100
+		db_ids = self.cas_conn.fetch_ids()
+		idList = []
+		rowcount = self.cas_conn.fetch_rowcount()
+
+		for user_id in db_ids:
+			idList.append(str(user_id[0]))
+
+		log_data("SDG_bl/clear_wells", "IDlist: " + str(idList), False)
+
+		i = 0
+		while (i <= rowcount[0] - 1):
+			removeId = idList[i]
+			log_data("SDG_bl/clear_wells", "DB_ID: " + str(removeId), False)
+			if (removeId >= delids):
+				self.cas_conn.delete_row(removeId)
+				delids = delids + 1
+			i = i + 1
+
 	def add_new_well(self, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype):
 
 		name = "loc-" + str(self.defaultname)

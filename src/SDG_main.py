@@ -25,7 +25,7 @@ try:
 	while (loop != "exit"):
 		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" +
 							"3 to start SimDataGen sewer system simulation\n" + "4 to start simulation animation\n" + "5 to change a location's parameter\n" +
-							"6 to add a new location\n" + "0 to close the program\n" + "simdatagen>> ")
+							"6 to add a new location\n" + "7 to clear extra wells\n" + "0 to close the program\n" + "simdatagen>> ")
 
 		if (option == "1"):
 			sdg.start_test()
@@ -116,6 +116,12 @@ try:
 
 				sdg.add_new_well(answers[1], answers[2], answers[3], answers[4], answers[5], answers[6], answers[7], answers[8], answers[9], answers[0])
 
+			else:
+				print "SimDataGen has not been started"
+
+		elif (option == "7"):
+			if (sdg_started == True):
+				sdg.clear_wells()
 			else:
 				print "SimDataGen has not been started"
 

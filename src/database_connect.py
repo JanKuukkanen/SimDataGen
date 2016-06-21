@@ -96,6 +96,19 @@ class DatabaseSession(object):
 			except Exception as e:
 				print "Database Error: ", e
 
+	def delete_row(self, c_id):
+		try:
+			table = modl.get_table()
+			delid = c_id
+
+			if (self.connection == True):
+				self.session.execute("DELETE FROM " + table + " WHERE id = " + delid + " IF EXISTS")
+			else:
+				print "Database Error: Failed to delete data in the database!"
+
+		except Exception as e:
+			print e
+
 	def send_meterwell_data(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):
 			try:
