@@ -48,9 +48,33 @@ class DatabaseSession(object):
 				self.connection = True
 
 			except Exception, e:
-				print e
+				print "Database Error: ", e
 		else:
 			print "Error: Connection already established!"
+
+	def location_data(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				locdata = self.session.execute("SELECT nimi, vedenpinta, virtausnopeus FROM " + table)
+				return locdata
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get location data from database"
+
+	def fetch_well_data(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				locdata = self.session.execute("SELECT id, nimi, vedenpinta, virtausnopeus, east, north, korkeus_merenpinnasta, paine, ominaissahkojohtavuus, lampotila FROM " + table)
+				return locdata
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get location data from database"
 
 	def fetch_ids(self):
 		if (self.connection == True):
@@ -59,8 +83,10 @@ class DatabaseSession(object):
 
 				db_ids = self.session.execute('SELECT id FROM ' + table)
 				return db_ids
-			except Exception, e:
+			except Exception as e:
 				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get id's from database"
 
 	def fetch_watersurface(self):
 		if (self.connection == True):
@@ -72,6 +98,8 @@ class DatabaseSession(object):
 
 			except Exception as e:
 				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get water surface level from database"
 
 	def fetch_rowcount(self):
 		if (self.connection == True):
@@ -84,6 +112,8 @@ class DatabaseSession(object):
 
 			except Exception as e:
 				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get rowcount from database"
 
 	def fetch_name(self):
 		if (self.connection == True):
@@ -95,19 +125,24 @@ class DatabaseSession(object):
 				
 			except Exception as e:
 				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get name from database"
 
 	def delete_row(self, c_id):
-		try:
-			table = modl.get_table()
-			delid = c_id
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+				delid = c_id
 
-			if (self.connection == True):
-				self.session.execute("DELETE FROM " + table + " WHERE id = " + delid + " IF EXISTS")
-			else:
-				print "Database Error: Failed to delete data in the database!"
+				if (self.connection == True):
+					self.session.execute("DELETE FROM " + table + " WHERE id = " + delid + " IF EXISTS")
+				else:
+					print "Database Error: Failed to delete data in the database!"
 
-		except Exception as e:
-			print e
+			except Exception as e:
+				print e
+		else:
+			print "Database Error: Failed to delete row in database"
 
 	def send_meterwell_data(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):

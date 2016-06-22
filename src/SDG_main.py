@@ -25,13 +25,15 @@ try:
 	while (loop != "exit"):
 		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" +
 							"3 to start SimDataGen sewer system simulation\n" + "4 to start simulation animation\n" + "5 to change a location's parameter\n" +
-							"6 to add a new location\n" + "7 to clear extra wells\n" + "0 to close the program\n" + "simdatagen>> ")
+							"6 to add a new location\n" + "7 to clear extra wells\n" + "8 to display currently existing well locations\n" + "0 to close the program\n" + "simdatagen>> ")
 
+		# Initial debug test
 		if (option == "1"):
 			sdg.start_test()
 
 			sdg_started = True
 
+		# Alter program's updating delay amount
 		elif (option == "2"):
 			if (sdg_started == True):
 				delay_time = raw_input("Enter delay speed: ")
@@ -42,17 +44,20 @@ try:
 			else:
 				print "SimDataGen has not been started"
 
+		# Start 10 well location simulation
 		elif (option == "3"):
 			sdg.start_simulation()
 
 			sdg_started = True
 
+		# Start mathplotlib visualization of the database traffic
 		elif (option == "4"):
 			if (sdg_started == True):
 				sdg.run_animation()
 			else:
 				print "SimDataGen has not been started"
 
+		# Alter a specific well's parameters
 		elif (option == "5"):
 			if (sdg_started == True):
 				sdg.show_locations()
@@ -79,11 +84,13 @@ try:
 			else:
 				print "SimDataGen has not been started"
 
+		# Add a new well with custom information
 		elif (option == "6"):
 			if (sdg_started == True):
 				answers = [None] * 10
 				contadd = True
 
+				# Ask the user for the parameters the well will use and set them to be the right type. No user input validation currently
 				eastloc = raw_input("Enter east location: ")
 				answers[1] = int(eastloc)
 
@@ -119,9 +126,35 @@ try:
 			else:
 				print "SimDataGen has not been started"
 
+		# Clear custom parameter wells
 		elif (option == "7"):
 			if (sdg_started == True):
 				sdg.clear_wells()
+			else:
+				print "SimDataGen has not been started"
+
+		elif (option == "8"):
+			if (sdg_started == True):
+				loop_continue = True
+
+				sdg.display_locations()
+
+				while (loop_continue == True):
+
+					spec_well = raw_input("Enter a location name to display further information or enter 0 to exit: ")
+
+					namematch = sdg.check_name_input(spec_well)
+
+					if (namematch == True):
+						sdg.display_well(spec_well)
+
+					elif (spec_well == "0"):
+						print "No location selected"
+						loop_continue = False
+
+					else:
+						print "Enter a valid lcation name"
+
 			else:
 				print "SimDataGen has not been started"
 

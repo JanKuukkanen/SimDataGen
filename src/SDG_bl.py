@@ -180,6 +180,61 @@ class SimDataGen(object):
 		else:
 			print "Enter a valid name!"
 
+	def check_name_input(self, user_input):
+		pattern = "loc-[0-9]{1,}"
+		if (re.search(pattern, user_input)):
+			return True
+		else:
+			return False
+
+	def display_locations(self):
+		locations = self.cas_conn.location_data()
+		rowcount = self.cas_conn.fetch_rowcount()
+		nameList = [None] * rowcount[0]
+		waterList = [None] * rowcount[0]
+		flowList = [None] * rowcount[0]
+
+		for eachLine in locations:
+		
+			i = 0
+			while (i <= rowcount[0]):
+				if (eachLine[0] == "loc-" + str(i + 1)):
+					nameList[i] = eachLine[0]
+					waterList[i] = eachLine[1]
+					flowList[i] = eachLine[2]
+
+				i = i + 1
+
+		log_data("SDG_bl/animate", "nameList: " + str(nameList) + "\n" + str(waterList) + "\n" + str(flowList), False)
+
+		i = 0
+		while (i < rowcount[0]):
+			print "Name: " + str(nameList[i]) + "			Water surface: " + str(waterList[i]) + "			Water flow: " + str(flowList[i])
+			i = i + 1
+
+
+	def display_well(self, well):
+		location_data = self.cas_conn.fetch_well_data()
+		rowcount = self.cas_conn.fetch_rowcount()
+		well_data = [None] * rowcount[0]
+
+		for eachLine in location_data:
+
+			if (well == eachLine[1]):
+				well_data[0] = eachLine[0]
+				well_data[1] = eachLine[1]
+				well_data[2] = eachLine[2]
+				well_data[3] = eachLine[3]
+				well_data[4] = eachLine[4]
+				well_data[5] = eachLine[5]
+				well_data[6] = eachLine[6]
+				well_data[7] = eachLine[7]
+				well_data[8] = eachLine[8]
+				well_data[9] = eachLine[9]
+
+		print "ID     " + "Name     " + "Vedenpinta     " + "Virtausnopeus        " + "East     " + "North     " + "Water level     " + "Pressure     " + "Conductivity     " + "Temperature     \n"
+		print str(well_data[0]) + "     " + str(well_data[1]) + "     " + str(well_data[2]) + "       " + str(well_data[3]) + "     " + str(well_data[4]) + "        " + str(well_data[5]) + "         " + str(well_data[6]) + "             " + str(well_data[7]) + "         " + str(well_data[8]) + "              " + str(well_data[9]) + "\n"
+
 	# Change the location information of an incoming well
 	def change_incoming_well(self, selected_loc):
 		answer = raw_input("Enter new incoming well level: ")
