@@ -7,12 +7,13 @@ import sys
 try:
 	loop = None
 	sdg_started = False
+	error_mode = 0
 
 	if not os.path.lexists("/var/log/SimDataGen"):
 		os.makedirs("/var/log/SimDataGen")
 
 	# Initialize SimDataGen object
-	sdg = SimDataGen(10)
+	sdg = SimDataGen(5)
 
 	print "****************************************************\n"
 	print "*                                                  *\n"
@@ -23,18 +24,14 @@ try:
 	print "****************************************************\n"
 
 	while (loop != "exit"):
-		option = raw_input("Enter a number to start an action:\n" + "1 to start SimDataGen test mode\n" + "2 to change delay speed\n" +
-							"3 to start SimDataGen sewer system simulation\n" + "4 to start simulation animation\n" + "5 to change a location's parameter\n" +
-							"6 to add a new location\n" + "7 to clear extra wells\n" + "8 to display currently existing well locations\n" + "0 to close the program\n" + "simdatagen>> ")
+		option = raw_input("Enter a number to start an action:\n" + "1 to change delay speed\n" +
+							"2 to start SimDataGen sewer system simulation\n" + "3 to start simulation animation\n" + "4 to change a location's parameter\n" +
+							"5 to add a new location\n" + "6 to clear extra wells\n" + "7 to display currently existing well locations\n" +
+							"8 to enable error mode\n" + "9 to disable error mode\n" + "0 to close the program\n" + "simdatagen>> ")
 
-		# Initial debug test
-		if (option == "1"):
-			sdg.start_test()
-
-			sdg_started = True
 
 		# Alter program's updating delay amount
-		elif (option == "2"):
+		if (option == "1"):
 			if (sdg_started == True):
 				delay_time = raw_input("Enter delay speed: ")
 
@@ -45,20 +42,20 @@ try:
 				print "SimDataGen has not been started"
 
 		# Start 10 well location simulation
-		elif (option == "3"):
+		elif (option == "2"):
 			sdg.start_simulation()
 
 			sdg_started = True
 
 		# Start mathplotlib visualization of the database traffic
-		elif (option == "4"):
+		elif (option == "3"):
 			if (sdg_started == True):
 				sdg.run_animation()
 			else:
 				print "SimDataGen has not been started"
 
 		# Alter a specific well's parameters
-		elif (option == "5"):
+		elif (option == "4"):
 			if (sdg_started == True):
 				sdg.show_locations()
 
@@ -85,7 +82,7 @@ try:
 				print "SimDataGen has not been started"
 
 		# Add a new well with custom information
-		elif (option == "6"):
+		elif (option == "5"):
 			if (sdg_started == True):
 				answers = [None] * 10
 				contadd = True
@@ -127,13 +124,14 @@ try:
 				print "SimDataGen has not been started"
 
 		# Clear custom parameter wells
-		elif (option == "7"):
+		elif (option == "6"):
 			if (sdg_started == True):
 				sdg.clear_wells()
 			else:
 				print "SimDataGen has not been started"
 
-		elif (option == "8"):
+		# Display currently existing wells and ask if the user would like to have detailed inforation on a specific one
+		elif (option == "7"):
 			if (sdg_started == True):
 				loop_continue = True
 
@@ -153,10 +151,42 @@ try:
 						loop_continue = False
 
 					else:
-						print "Enter a valid lcation name"
+						print "Enter a valid location name!"
 
 			else:
 				print "SimDataGen has not been started"
+
+		# Enable error mode by asking the user which error to use, currently only overflow error is supported
+		elif (option == "8"):
+			if (sdg_started == True):
+				
+				sdg.display_locations()
+
+				errwell = raw_input("Enter the number of the well you would like the error to take place in: ")
+
+				print "1. Overflow error"
+
+				error = raw_input("Enter which error you would like to enable: ")
+
+				sdg.enable_error(errwell, error)
+
+				error_mode = 1
+
+				print "Error mode enabled\n"
+
+			else:
+				print "SimDataGen has not been started"
+
+		elif (option == "9"):
+			if (sdg_started == True and error_mode == 1):
+				sdg.disable_errors()
+
+				error_mode = 0
+
+				print "Error mode disabled\n"
+
+			else:
+				print "SimDataGen has not been started or error mode is not enabled"
 
 		elif (option == "0"):
 				loop = "exit"

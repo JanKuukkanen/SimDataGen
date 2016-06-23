@@ -22,6 +22,8 @@ class SimDataGen(object):
 	ax1 = None
 	defaultid = 100
 	defaultname = 11
+	errorwellList = []
+	errornumList = []
 	
 	# Initialize database object
 	cas_conn = DatabaseSession()
@@ -36,10 +38,13 @@ class SimDataGen(object):
 		self.defaultid = 100
 		self.defaultname = 11
 
+		self.errorwellList = []
+		self.errornumList = []
+
 	#Methods
 
 	def calculations(self, i, t, former_f, last):
-		# calculations for all locations in locationlist
+		# Calculations for all locations in locationlist
 		self.locationList[i].tyonto()
 
 		f_next = self.locationList[i].get_pressure()
@@ -169,7 +174,7 @@ class SimDataGen(object):
 		return check_result
 
 	def show_parameters(self):
-		print "0. Name\n1. East location\n2. North location\n3. Well level\n4. Incoming well\n5. Outgoing well"
+		print "0. East location\n1. North location\n2. Well level\n3. Incoming well\n4. Outgoing well"
 
 	# Chnge the name of a well location
 	def change_name(self, selected_loc):
@@ -209,7 +214,7 @@ class SimDataGen(object):
 
 		i = 0
 		while (i < rowcount[0]):
-			print "Name: " + str(nameList[i]) + "			Water surface: " + str(waterList[i]) + "			Water flow: " + str(flowList[i])
+			print str(i) + ". " + str(nameList[i]) + "			Water surface: " + str(waterList[i]) + "			Water flow: " + str(flowList[i]) + "\n"
 			i = i + 1
 
 
@@ -255,40 +260,37 @@ class SimDataGen(object):
 
 	# Change well parameters
 	def change_parameter(self, selected_loc, selected_parameter):
+		
 		if (selected_parameter == "0"):
-			self.change_name(selected_loc)
-
-		elif (selected_parameter == "1"):
 			answer = raw_input("Enter new east location: ")
 			self.locationList[int(selected_loc)].set_eastloc(int(answer))
 
-		elif (selected_parameter == "2"):
+		elif (selected_parameter == "1"):
 			answer = raw_input("Enter new north location: ")
 			self.locationList[int(selected_loc)].set_northloc(int(answer))
 
-		elif (selected_parameter == "3"):
+		elif (selected_parameter == "2"):
 			answer = raw_input("Enter new well level: ")
 			self.locationList[int(selected_loc)].set_well_level(int(answer))
 
-		elif (selected_parameter == "4"):
+		elif (selected_parameter == "3"):
 			self.change_incoming_well(selected_loc)
 
-		elif (selected_parameter == "5"):
+		elif (selected_parameter == "4"):
 			self.change_outgoing_well(selected_loc)
 
-	# Function called from SDG_main
-	def start_test(self):
+	def enable_error(self, errorwell, error):
+		
+		self.locationList[int(errorwell)].set_error_mode(int(error))
 
-		# Connect to database
-		self.cas_conn.establish_connection()
+		self.errorwellList.append(self.locationList[int(errorwell)].get_name())
+		self.errornumList.append(error)
 
-		self.locationList.append(MeterWell(0, "test", 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1))
-
-		log_data("SDG_bl/start_test", "Simulation test started", True)
-
-		self.thread_init()
-
-		con_success = self.cas_conn.get_connection()
+	def disable_errors(self):
+		i = 0
+		while (i <= len(self.errorwellList)):
+			self.locationList[i].set_error_mode(0)
+			i = i + 1
 
 	def animate(self, i):
 		pullData = self.cas_conn.fetch_watersurface()
