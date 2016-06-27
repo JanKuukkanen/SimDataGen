@@ -254,8 +254,8 @@ class SimDataGen(object):
 		answer = raw_input("Enter new incoming well level: ")
 		self.locationList[int(selected_loc)].set_out_flow_well(int(answer))
 
-		answerE = raw_input("Enter new incoming well east location: ")
-		answerN = raw_input("Enter new incoming well north location: ")
+		answerE = raw_input("Enter new outgoing well east location: ")
+		answerN = raw_input("Enter new outgoing well north location: ")
 		self.locationList[int(selected_loc)].set_out_pipe_loc(int(answerE), int(answerN))
 
 	# Change well parameters
@@ -290,6 +290,7 @@ class SimDataGen(object):
 		i = 0
 		while (i <= len(self.errorwellList)):
 			self.locationList[i].set_error_mode(0)
+			log_data("SDG_bl/disable_errors", "Error mode set to 0" + ", ErrorwellList: " + str(len(self.errorwellList)), False)
 			i = i + 1
 
 	def animate(self, i):

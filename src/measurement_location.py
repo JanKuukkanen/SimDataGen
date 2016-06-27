@@ -165,7 +165,7 @@ class MeterWell(object):
 		self.out_flow_well = out_flow_well
 
 	def set_error_mode(self, error):
-		self.error_mode = error
+		self.error_mode = str(error)
 
 	# Set incoming and outgoing pipe diameters for the well according to well type
 	def set_pipe_diameters(self):
@@ -285,8 +285,10 @@ class MeterWell(object):
 			sisaan_v = self.virtausnopeus(c,a,xa) + fu
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v) + ", former_pressure: " + str(fu), False)
 
-		if (self.error_mode == 1):
+		if (self.error_mode == "1"):
 			sisaan_v = sisaan_v * 2
+
+		log_data("Measurement_location/countWaterLevel", "Location: " + self.name + " sisaan_v error mode: " + str(self.error_mode), False)
 
 		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
 		# Outgoing flow from the well
