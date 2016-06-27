@@ -42,6 +42,9 @@ class MeterWell(object):
 	# Outgoing pipe length (x, y) (I, P)
 	out_pipe_loc = []
 
+	# Error mode
+	error_mode = 0
+
 	# Type of well
 	# 1 = incoming 0.2, outgoing 0.2
 	# 2 = incoming 0.2, outgoing 0.16
@@ -50,7 +53,7 @@ class MeterWell(object):
 	welltype = None
 
 	#Constructor
-	def __init__(self, wellid, name="", eastloc=1.0, northloc=1.0, well_level=0.0, inc_flow_well=0, out_flow_well=0, xi=0, yi=0, xo=0, yo=0, welltype=1):
+	def __init__(self, wellid, name="", eastloc=1.0, northloc=1.0, well_level=0.0, inc_flow_well=0, out_flow_well=0, xi=0, yi=0, xo=0, yo=0, welltype=4):
 
 		self.wellid = wellid
 		self.name = name
@@ -70,6 +73,8 @@ class MeterWell(object):
 
 		self.inc_pipe_d=0.2
 		self.out_pipe_d=0.2
+
+		self.error_mode = 0
 
 		self.welltype = welltype
 
@@ -137,13 +142,15 @@ class MeterWell(object):
 		return self.out_pipe_loc
 
 	def set_out_pipe_loc(self, x, y):
-		self.out_pipe_loc.append(x, y)
+		self.out_pipe_loc[0] = x
+		self.out_pipe_loc[1] = y
 
 	def get_inc_pipe_loc(self):
 		return self.inc_pipe_loc
 
 	def set_inc_pipe_loc(self, x, y):
-		self.inc_pipe_loc.append(x, y)
+		self.inc_pipe_loc[0] = x
+		self.inc_pipe_loc[1] = y
 
 	def set_well_level(self, well_level):
 		self.well_level = well_level
@@ -151,9 +158,22 @@ class MeterWell(object):
 	def set_well_diameter(self, well_diameter):
 		self.well_diameter = well_diameter
 
+	def set_inc_flow_well(self, inc_flow_well):
+		self.inc_flow_well = inc_flow_well
+
+	def set_out_flow_well(self, out_flow_well):
+		self.out_flow_well = out_flow_well
+
+	def set_error_mode(self, error):
+		self.error_mode = str(error)
+
 	# Set incoming and outgoing pipe diameters for the well according to well type
 	def set_pipe_diameters(self):
-		if (self.welltype == 2):
+		if (self.welltype == 1):
+			self.inc_pipe_d = 0.2
+			self.out_pipe_d = 0.2
+
+		elif (self.welltype == 2):
 			self.inc_pipe_d = 0.2
 			self.out_pipe_d = 0.16
 
@@ -244,7 +264,7 @@ class MeterWell(object):
 	def virtaustilavuus(self, d, v):
 		pii = math.pi
 		z = pii*d*d*v
-		return z/4
+		return float(z)/4
 
 	def countWaterLevel(self, t, f, fu, last):
 
@@ -257,16 +277,21 @@ class MeterWell(object):
 		c = self.inc_flow_well
 		b = self.out_flow_well
 
-		# Incoming flows to the well
+		# Incoming flow to the well
 		if (c == 0):
-			sisaan_v = float(random.randrange(7, 13))/10
+			sisaan_v = float(random.randrange(6, 8))/10
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v), False)
 		else:
 			sisaan_v = self.virtausnopeus(c,a,xa) + fu
 			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v) + ", former_pressure: " + str(fu), False)
 
+		if (self.error_mode == "1"):
+			sisaan_v = sisaan_v * 2
+
+		log_data("Measurement_location/countWaterLevel", "Location: " + self.name + " sisaan_v error mode: " + str(self.error_mode), False)
+
 		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
-		# Outgoing flows from the well
+		# Outgoing flow from the well
 		if (b > 0):
 			ulos_v = self.virtausnopeus(a, b, xb)+f
 			tilavuus_ulos = float(self.virtaustilavuus(self.out_pipe_d, ulos_v))

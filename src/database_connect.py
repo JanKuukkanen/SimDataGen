@@ -48,9 +48,33 @@ class DatabaseSession(object):
 				self.connection = True
 
 			except Exception, e:
-				print e
+				print "Database Error: ", e
 		else:
 			print "Error: Connection already established!"
+
+	def location_data(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				locdata = self.session.execute("SELECT nimi, vedenpinta, virtausnopeus FROM " + table)
+				return locdata
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get location data from database"
+
+	def fetch_well_data(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				locdata = self.session.execute("SELECT id, nimi, vedenpinta, virtausnopeus, east, north, korkeus_merenpinnasta, paine, ominaissahkojohtavuus, lampotila FROM " + table)
+				return locdata
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get location data from database"
 
 	def fetch_ids(self):
 		if (self.connection == True):
@@ -59,27 +83,66 @@ class DatabaseSession(object):
 
 				db_ids = self.session.execute('SELECT id FROM ' + table)
 				return db_ids
-			except Exception, e:
+			except Exception as e:
 				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get id's from database"
 
-	# Insert or update data regarding the water current to the database
-	def send_current(self, id_same, current_id, waterlevel, fetched_time):
-		# do not allow id's below 1000 to be used
+	def fetch_watersurface(self):
 		if (self.connection == True):
 			try:
 				table = modl.get_table()
-				# Update row if current id already exists or insert new id if it does not
-				if (id_same == True):
-					self.session.execute("UPDATE " + table +" SET waterlevel = (%s), time = (%s) WHERE id = (%s)",(waterlevel, fetched_time, current_id))
-				elif (id_same == False):
-					self.session.execute("INSERT INTO " + table + " (id, time, waterlevel) VALUES (%s, %s, %s)", (current_id, fetched_time, waterlevel))
+
+				watersurfaces = self.session.execute('SELECT vedenpinta FROM ' + table)
+				return watersurfaces
+
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get water surface level from database"
+
+	def fetch_rowcount(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				rows = self.session.execute('SELECT COUNT(*) FROM ' + table)
+
+				return rows[0]
+
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get rowcount from database"
+
+	def fetch_name(self):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+
+				names = self.session.execute('SELECT nimi FROM ' + table)
+				return names
+				
+			except Exception as e:
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to get name from database"
+
+	def delete_row(self, c_id):
+		if (self.connection == True):
+			try:
+				table = modl.get_table()
+				delid = c_id
+
+				if (self.connection == True):
+					self.session.execute("DELETE FROM " + table + " WHERE id = " + delid + " IF EXISTS")
 				else:
-					print "Database Error: Something has gone terribly wrong"
+					print "Database Error: Failed to delete data in the database!"
 
 			except Exception as e:
 				print e
 		else:
-			print "Database Error: Failed to insert data to database!"
+			print "Database Error: Failed to delete row in database"
 
 	def send_meterwell_data(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):
