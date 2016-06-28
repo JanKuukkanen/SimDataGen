@@ -9,8 +9,10 @@ try:
 	sdg_started = False
 	error_mode = 0
 
-	if not os.path.lexists("/var/log/SimDataGen"):
-		os.makedirs("/var/log/SimDataGen")
+	dir_ = os.path.dirname(os.path.realpath("SDG_main.py"))
+	if not os.path.lexists(dir_ + "/log"):
+		os.makedirs(dir_ + "/log")
+		os.chmod(dir_ + "/log", 0777)
 
 	# Initialize SimDataGen object
 	sdg = SimDataGen(5)

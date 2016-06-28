@@ -98,7 +98,9 @@ class SimDataGen(object):
 
 				self.time = get_time_format()
 
-				self.cas_conn.send_meterwell_data(id_same, current_id, self.locationList[i].name, self.locationList[i].eastloc, self.locationList[i].northloc, self.locationList[i].well_level, self.locationList[i].temperature, self.locationList[i].conductivity, self.locationList[i].pressure, self.locationList[i].watersurface, self.locationList[i].flowrate)
+				self.cas_conn.send_meterwell_data(id_same, current_id, self.locationList[i].name, self.locationList[i].eastloc, \
+				self.locationList[i].northloc, self.locationList[i].well_level, self.locationList[i].temperature, self.locationList[i].conductivity, \
+				self.locationList[i].pressure, self.locationList[i].watersurface, self.locationList[i].flowrate)
 
 				log_data("SDG_bl/thread_script", "Inserted location " + self.locationList[i].name + " to the database. Vedenpinta: " + str(self.locationList[i].watersurface), False)
 
@@ -237,8 +239,14 @@ class SimDataGen(object):
 				well_data[8] = eachLine[8]
 				well_data[9] = eachLine[9]
 
-		print "ID     " + "Name     " + "Vedenpinta     " + "Virtausnopeus        " + "East     " + "North     " + "Water level     " + "Pressure     " + "Conductivity     " + "Temperature     \n"
-		print str(well_data[0]) + "     " + str(well_data[1]) + "     " + str(well_data[2]) + "       " + str(well_data[3]) + "     " + str(well_data[4]) + "        " + str(well_data[5]) + "         " + str(well_data[6]) + "             " + str(well_data[7]) + "         " + str(well_data[8]) + "              " + str(well_data[9]) + "\n"
+		print "ID     " + "Name     " + "Vedenpinta     " + "Virtausnopeus        " + \
+		"East     " + "North     " + "Water level     " + "Pressure     " + "Conductivity     " + \
+		"Temperature     \n"
+
+		print str(well_data[0]) + "     " + str(well_data[1]) + "     " + str(well_data[2]) + \
+		"       " + str(well_data[3]) + "     " + str(well_data[4]) + "        " + str(well_data[5]) + \
+		"         " + str(well_data[6]) + "             " + str(well_data[7]) + "         " + str(well_data[8]) + \
+		"              " + str(well_data[9]) + "\n"
 
 	# Change the location information of an incoming well
 	def change_incoming_well(self, selected_loc):
@@ -347,15 +355,15 @@ class SimDataGen(object):
 		log_data("SDG_bl/animate", "correctresList: " + str(correctresList) + ", nameList: " + str(nameList), False)
 
 		# Set the correctly ordered lists together
-		o = 0
+		a = 0
 		i = 1
-		while (o < rowcount[0]):
+		while (a < rowcount[0]):
 
 			xar.append(i)
-			yar.append(correctresList[o])
-			log_data("SDG_bl/animate", "Location name: " + str(nameList[o]) + ", Result: " + str(correctresList[o]), False)
+			yar.append(correctresList[a])
+			log_data("SDG_bl/animate", "Location name: " + str(nameList[a]) + ", Result: " + str(correctresList[a]), False)
 			i = i + 1
-			o = o + 1
+			a = a + 1
 
 		self.ax1.clear()
 		self.ax1.plot(xar, yar)

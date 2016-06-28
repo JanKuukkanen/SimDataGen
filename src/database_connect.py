@@ -4,7 +4,7 @@ from data_format import *
 
 # get metadata regarding database from a separate file
 import imp
-modl = imp.load_source('data_file', '/home/user/data_file.py')
+modl = imp.load_source('data_file', 'src/data_file.py')
 
 
 class DatabaseSession(object):
@@ -151,9 +151,13 @@ class DatabaseSession(object):
 
 				# Update row if current id already exists or insert new id if it does not
 				if (id_same == True):
-					self.session.execute("UPDATE " + table + " SET nimi = (%s), east = (%s), north = (%s), korkeus_merenpinnasta = (%s), lampotila = (%s), ominaissahkojohtavuus = (%s), paine = (%s), vedenpinta = (%s), virtausnopeus = (%s) WHERE id = (%s)", (nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus, c_id))
+					self.session.execute("UPDATE " + table + " SET nimi = (%s), east = (%s), north = (%s), korkeus_merenpinnasta = (%s)," \
+										"lampotila = (%s), ominaissahkojohtavuus = (%s), paine = (%s), vedenpinta = (%s), virtausnopeus = (%s) " \
+										"WHERE id = (%s)", (nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus, c_id))
 				elif (id_same == False):
-					self.session.execute("INSERT INTO " + table + " (id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus))
+					self.session.execute("INSERT INTO " + table + " (id, nimi, east, north, korkeus_merenpinnasta, " \
+										"lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", \
+										(c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus))
 				else:
 					print "Database Error: Somethin's gone all wrong"
 
