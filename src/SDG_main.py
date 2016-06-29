@@ -1,10 +1,11 @@
 # Main functionality (Presentation layer)
-
-from SDG_bl import SimDataGen
 import os
 import sys
+from data_format import *
 
 try:
+	from SDG_bl import SimDataGen
+
 	loop = None
 	sdg_started = False
 	error_mode = 0
@@ -37,9 +38,14 @@ try:
 			if (sdg_started == True):
 				delay_time = raw_input("Enter delay speed: ")
 
-				print delay_time, "\n"
+				validate_delay = sdg.validateDelayTime(delay_time)
 
-				sdg.setDelayTime(delay_time)
+				if (validate_delay == True):
+					print delay_time, "\n"
+					sdg.setDelayTime(delay_time)
+
+				else:
+					print "You have entered an invalid input!"
 			else:
 				print "SimDataGen has not been started"
 
@@ -202,5 +208,8 @@ try:
 	
 	sys.exit()
 
-except (KeyboardInterrupt, SystemExit):
-	sys.exit()
+except Exception, e:
+	logData("SDG_main/imports", str(e), False)
+	print "Failed to Start SimDataGen! Make sure you have a working Cassandra database with the correct sql schema created. " \
+			"The database schema can be found in the resources folder. After you have the database working run the installation_sdg.sh file"
+	sys.exit

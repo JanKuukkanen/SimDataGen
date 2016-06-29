@@ -177,6 +177,13 @@ class SimDataGen(object):
 		else:
 			return False
 
+	def validateDelayTime(self, delay_time):
+		pattern = "^\d*$"
+		if (re.search(pattern, delay_time)):
+			return True
+		else:
+			return False
+
 	def displayLocations(self):
 		locations = self.cas_conn.locationData()
 		rowcount = self.cas_conn.fetchRowcount()
