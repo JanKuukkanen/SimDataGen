@@ -19,12 +19,12 @@ try:
 	text_file.write('port = "9042"\n')
 	text_file.write('table = "' + table + '"\n\n')
 
-	text_file.write('def get_username():\n    return username\n')
-	text_file.write('def get_password():\n    return password\n')
-	text_file.write('def get_keyspace():\n    return keyspace\n')
-	text_file.write('def get_node_ips():\n    return node_ips\n')
-	text_file.write('def get_port():\n    return port\n')
-	text_file.write('def get_table():\n    return table\n')
+	text_file.write('def getUsername():\n    return username\n')
+	text_file.write('def getPassword():\n    return password\n')
+	text_file.write('def getKeyspace():\n    return keyspace\n')
+	text_file.write('def getNode_ips():\n    return node_ips\n')
+	text_file.write('def getPort():\n    return port\n')
+	text_file.write('def getTable():\n    return table\n')
 
 except Exception as e:
 	print e

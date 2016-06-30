@@ -22,13 +22,13 @@ class DatabaseSession(object):
 	#Constructor
 	def __init__(self, uname="", pword="", kspace="", _node_ips="", _port=""):
 
-		self.username = modl.get_username()
-		self.password = modl.get_password()
-		self.keyspace = modl.get_keyspace()
+		self.username = modl.getUsername()
+		self.password = modl.getPassword()
+		self.keyspace = modl.getKeyspace()
 		self.session = None
 		self.connection = False
-		self.node_ips = modl.get_node_ips()
-		self.port = modl.get_port()
+		self.node_ips = modl.getNodeIps()
+		self.port = modl.getPort()
 		self.metadata = None
 
 
@@ -56,7 +56,7 @@ class DatabaseSession(object):
 	def locationData(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				locdata = self.session.execute("SELECT nimi, vedenpinta, virtausnopeus FROM " + table)
 				return locdata
@@ -69,7 +69,7 @@ class DatabaseSession(object):
 	def fetchWellData(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				locdata = self.session.execute("SELECT id, nimi, vedenpinta, virtausnopeus, east, north, korkeus_merenpinnasta, paine, ominaissahkojohtavuus, lampotila FROM " + table)
 				return locdata
@@ -82,7 +82,7 @@ class DatabaseSession(object):
 	def fetchIds(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				db_ids = self.session.execute('SELECT id FROM ' + table)
 				return db_ids
@@ -95,7 +95,7 @@ class DatabaseSession(object):
 	def fetchWatersurface(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				watersurfaces = self.session.execute('SELECT vedenpinta FROM ' + table)
 				return watersurfaces
@@ -109,7 +109,7 @@ class DatabaseSession(object):
 	def fetchRowcount(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				rows = self.session.execute('SELECT COUNT(*) FROM ' + table)
 
@@ -124,7 +124,7 @@ class DatabaseSession(object):
 	def fetchName(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				names = self.session.execute('SELECT nimi FROM ' + table)
 				return names
@@ -138,7 +138,7 @@ class DatabaseSession(object):
 	def deleteRow(self, c_id):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 				delid = c_id
 
 				if (self.connection == True):
@@ -155,7 +155,7 @@ class DatabaseSession(object):
 	def sendMeterwellData(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				# Update row if current id already exists or insert new id if it does not
 				if (id_same == True):

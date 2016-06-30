@@ -5,7 +5,6 @@
 
 import math
 import random
-from data_format import *
 
 class MeterWell(object):
 
