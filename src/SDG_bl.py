@@ -31,7 +31,7 @@ class SimDataGen(object):
 	#Constructor
 	def __init__(self, delay_time=5):
 
-		self.time = get_time_format()
+		self.time = getTimeFormat()
 		self.delay_time = delay_time
 		self.locationList = []
 		self.ax1 = None
@@ -47,84 +47,82 @@ class SimDataGen(object):
 		# Calculations for all locations in locationlist
 		self.locationList[i].tyonto()
 
-		f_next = self.locationList[i].get_pressure()
+		f_next = self.locationList[i].getPressure()
 
 		self.locationList[i].countWaterLevel(t, self.locationList[i].pressure, former_f, last)
-
-		log_data("SDG_bl/calculations", "made calculations to location: " + self.locationList[i].name + ", time: " + str(t), False)
 
 		return f_next
 
 	# Threading function
-	def meterwell_thread(self, arg):
-		id_same = False
-		i = 0
-		former_f = 0.0
-
-		# Get all id's from the database so we can compare them to the current id
-		db_ids = self.cas_conn.fetch_ids()
-
-		t = 1.0
-
-		self.threading_is = True
-
-		while (self.threading_is == True):
-
-			# Suspend execution for 5 seconds
-			sleep(self.delay_time)
-
+	def meterwellThread(self, arg):
+		try:
+			id_same = False
 			i = 0
+			former_f = 0.0
 
-			if (t != 36):
-				t = t + 0.01
-			else:
-				t = 1.0
+			# Get all id's from the database so we can compare them to the current id
+			db_ids = self.cas_conn.fetchIds()
 
-			while (i < len(self.locationList)):
+			t = 1.0
 
-				current_id = self.locationList[i].get_wellid()
+			self.threading_is = True
 
-				if (i + 1 == len(self.locationList)):
-					receive_f = self.calculations(i, t, former_f, True)
+			while (self.threading_is == True):
+
+				# Suspend execution for 5 seconds
+				sleep(self.delay_time)
+
+				i = 0
+
+				if (t != 36):
+					t = t + 0.01
 				else:
-					receive_f = self.calculations(i, t, former_f, False)
+					t = 1.0
 
-				# Check if our current id already exists in the database
-				for user_id in db_ids:
-					if (current_id == user_id):
-						id_same = True
+				while (i < len(self.locationList)):
+
+					current_id = self.locationList[i].getWellid()
+
+					if (i + 1 == len(self.locationList)):
+						receive_f = self.calculations(i, t, former_f, True)
 					else:
-						id_same = False
+						receive_f = self.calculations(i, t, former_f, False)
 
-				self.time = get_time_format()
+					# Check if our current id already exists in the database
+					for user_id in db_ids:
+						if (current_id == user_id):
+							id_same = True
+						else:
+							id_same = False
 
-				self.cas_conn.send_meterwell_data(id_same, current_id, self.locationList[i].name, self.locationList[i].eastloc, self.locationList[i].northloc, self.locationList[i].well_level, self.locationList[i].temperature, self.locationList[i].conductivity, self.locationList[i].pressure, self.locationList[i].watersurface, self.locationList[i].flowrate)
+					self.time = getTimeFormat()
 
-				log_data("SDG_bl/thread_script", "Inserted location " + self.locationList[i].name + " to the database. Vedenpinta: " + str(self.locationList[i].watersurface), False)
+					self.cas_conn.sendMeterwellData(id_same, current_id, self.locationList[i].name, self.locationList[i].eastloc, \
+					self.locationList[i].northloc, self.locationList[i].well_level, self.locationList[i].temperature, self.locationList[i].conductivity, \
+					self.locationList[i].pressure, self.locationList[i].watersurface, self.locationList[i].flowrate)
 
-				former_f = self.locationList[i].get_pressure()
+					former_f = self.locationList[i].getPressure()
 
-				log_data("SDG_bl/thread_script", "Former pressure: " + str(former_f) + ", Current pressure: " + str(self.locationList[i].get_pressure()), False)
+					i = i + 1
 
-				i = i + 1
-
+		except Exception as e:
+			logData("SDG_bl/meterwellThread", str(e), False)
+			print e
 
 	# Threading frame
-	def thread_init(self):
+	def threadInit(self):
 		try:
 			# Set the target function and arguments for thread
-			self.threads = Thread(target = self.meterwell_thread, args = (1, ))
+			self.threads = Thread(target = self.meterwellThread, args = (1, ))
 
 			self.threads.start()
-
-			log_data("SDG_bl/run_indef", "Started thread", False)
 
 		except Exception as e:
 			print e
 			sys.exit()
 
 	# Close running thread and database connection
-	def database_close(self):
+	def databaseClose(self):
 		if (self.threading_is == True):
 			# Set threading_is variable to false so the thread will close
 			self.threading_is = False
@@ -132,22 +130,18 @@ class SimDataGen(object):
 			# Wait for active threads to finish
 			self.threads.join()
 		# Close database connection
-		self.cas_conn.close_connection()
+		self.cas_conn.closeConnection()
 
-		log_data("SDG_bl/database_close", "Closed database", False)
-
-	def set_delay_time(self, delay_time):
+	def setDelayTime(self, delay_time):
 		
 		self.delay_time = int(delay_time)
 
-		log_data("SDG_bl/set_delay_time", "Altered delay time", False)
-
-	def check_database_connection(self):
-		connection = self.cas_conn.get_connection()
+	def checkDatabaseConnection(self):
+		connection = self.cas_conn.getConnection()
 		
 		return connection
 
-	def check_location(self, selected_loc):
+	def checkLocation(self, selected_loc):
 		i = 0
 		check_result = False
 		while (i <= len(self.locationList)):
@@ -157,13 +151,13 @@ class SimDataGen(object):
 				
 		return check_result
 
-	def show_locations(self):
+	def showLocations(self):
 		i = 0
 		while (i < len(self.locationList)):
-			print str(i) + ". " + str(self.locationList[i].get_name()) + "\n"
+			print str(i) + ". " + str(self.locationList[i].getName()) + "\n"
 			i = i + 1
 
-	def check_parameters(self, selected_parameter):
+	def checkParameters(self, selected_parameter):
 		i = 0
 		check_result = False
 		while (i <= 5):
@@ -173,28 +167,26 @@ class SimDataGen(object):
 
 		return check_result
 
-	def show_parameters(self):
+	def showParameters(self):
 		print "0. East location\n1. North location\n2. Well level\n3. Incoming well\n4. Outgoing well"
 
-	# Chnge the name of a well location
-	def change_name(self, selected_loc):
-		pattern = "loc-[0-9]{1,}"
-		answer = raw_input("Enter new name (format: loc-[number]): ")
-		if (re.search(pattern, answer)):
-			self.locationList[int(selected_loc)].set_name(answer)
-		else:
-			print "Enter a valid name!"
-
-	def check_name_input(self, user_input):
+	def checkNameInput(self, user_input):
 		pattern = "loc-[0-9]{1,}"
 		if (re.search(pattern, user_input)):
 			return True
 		else:
 			return False
 
-	def display_locations(self):
-		locations = self.cas_conn.location_data()
-		rowcount = self.cas_conn.fetch_rowcount()
+	def validateDelayTime(self, delay_time):
+		pattern = "^\d*$"
+		if (re.search(pattern, delay_time)):
+			return True
+		else:
+			return False
+
+	def displayLocations(self):
+		locations = self.cas_conn.locationData()
+		rowcount = self.cas_conn.fetchRowcount()
 		nameList = [None] * rowcount[0]
 		waterList = [None] * rowcount[0]
 		flowList = [None] * rowcount[0]
@@ -210,17 +202,15 @@ class SimDataGen(object):
 
 				i = i + 1
 
-		log_data("SDG_bl/animate", "nameList: " + str(nameList) + "\n" + str(waterList) + "\n" + str(flowList), False)
-
 		i = 0
 		while (i < rowcount[0]):
 			print str(i) + ". " + str(nameList[i]) + "			Water surface: " + str(waterList[i]) + "			Water flow: " + str(flowList[i]) + "\n"
 			i = i + 1
 
 
-	def display_well(self, well):
-		location_data = self.cas_conn.fetch_well_data()
-		rowcount = self.cas_conn.fetch_rowcount()
+	def displayWell(self, well):
+		location_data = self.cas_conn.fetchWellData()
+		rowcount = self.cas_conn.fetchRowcount()
 		well_data = [None] * rowcount[0]
 
 		for eachLine in location_data:
@@ -237,66 +227,71 @@ class SimDataGen(object):
 				well_data[8] = eachLine[8]
 				well_data[9] = eachLine[9]
 
-		print "ID     " + "Name     " + "Vedenpinta     " + "Virtausnopeus        " + "East     " + "North     " + "Water level     " + "Pressure     " + "Conductivity     " + "Temperature     \n"
-		print str(well_data[0]) + "     " + str(well_data[1]) + "     " + str(well_data[2]) + "       " + str(well_data[3]) + "     " + str(well_data[4]) + "        " + str(well_data[5]) + "         " + str(well_data[6]) + "             " + str(well_data[7]) + "         " + str(well_data[8]) + "              " + str(well_data[9]) + "\n"
+		print "ID     " + "Name     " + "Vedenpinta     " + "Virtausnopeus        " + \
+		"East     " + "North     " + "Water level     " + "Pressure     " + "Conductivity     " + \
+		"Temperature     \n"
+
+		print str(well_data[0]) + "     " + str(well_data[1]) + "     " + str(well_data[2]) + \
+		"       " + str(well_data[3]) + "     " + str(well_data[4]) + "        " + str(well_data[5]) + \
+		"         " + str(well_data[6]) + "             " + str(well_data[7]) + "         " + str(well_data[8]) + \
+		"              " + str(well_data[9]) + "\n"
 
 	# Change the location information of an incoming well
-	def change_incoming_well(self, selected_loc):
+	def changeIncomingWell(self, selected_loc):
 		answer = raw_input("Enter new incoming well level: ")
-		self.locationList[int(selected_loc)].set_inc_flow_well(int(answer))
+		self.locationList[int(selected_loc)].setIncFlowWell(int(answer))
 
 		answerE = raw_input("Enter new incoming well east location: ")
 		answerN = raw_input("Enter new incoming well north location: ")
-		self.locationList[int(selected_loc)].set_inc_pipe_loc(int(answerE), int(answerN))
+		self.locationList[int(selected_loc)].setIncPipeLoc(int(answerE), int(answerN))
 
 	# Change the lcation information of an outgoing well
-	def change_outgoing_well(self, selected_loc):
+	def changeOutgoingWell(self, selected_loc):
 		answer = raw_input("Enter new incoming well level: ")
-		self.locationList[int(selected_loc)].set_out_flow_well(int(answer))
+		self.locationList[int(selected_loc)].setOutFlowWell(int(answer))
 
 		answerE = raw_input("Enter new outgoing well east location: ")
 		answerN = raw_input("Enter new outgoing well north location: ")
-		self.locationList[int(selected_loc)].set_out_pipe_loc(int(answerE), int(answerN))
+		self.locationList[int(selected_loc)].setOutPipeLoc(int(answerE), int(answerN))
 
 	# Change well parameters
-	def change_parameter(self, selected_loc, selected_parameter):
+	def changeParameter(self, selected_loc, selected_parameter):
 		
 		if (selected_parameter == "0"):
 			answer = raw_input("Enter new east location: ")
-			self.locationList[int(selected_loc)].set_eastloc(int(answer))
+			self.locationList[int(selected_loc)].setEastloc(int(answer))
 
 		elif (selected_parameter == "1"):
 			answer = raw_input("Enter new north location: ")
-			self.locationList[int(selected_loc)].set_northloc(int(answer))
+			self.locationList[int(selected_loc)].setNorthloc(int(answer))
 
 		elif (selected_parameter == "2"):
 			answer = raw_input("Enter new well level: ")
-			self.locationList[int(selected_loc)].set_well_level(int(answer))
+			self.locationList[int(selected_loc)].setWellLevel(int(answer))
 
 		elif (selected_parameter == "3"):
-			self.change_incoming_well(selected_loc)
+			self.changeIncomingWell(selected_loc)
 
 		elif (selected_parameter == "4"):
-			self.change_outgoing_well(selected_loc)
+			self.changeOutgoingWell(selected_loc)
 
-	def enable_error(self, errorwell, error):
+	def enableError(self, errorwell, error):
 		
-		self.locationList[int(errorwell)].set_error_mode(int(error))
+		self.locationList[int(errorwell)].setErrorMode(int(error))
 
-		self.errorwellList.append(self.locationList[int(errorwell)].get_name())
+		self.errorwellList.append(self.locationList[int(errorwell)].getName())
 		self.errornumList.append(error)
 
-	def disable_errors(self):
+	def disableErrors(self):
 		i = 0
 		while (i <= len(self.errorwellList)):
-			self.locationList[i].set_error_mode(0)
-			log_data("SDG_bl/disable_errors", "Error mode set to 0" + ", ErrorwellList: " + str(len(self.errorwellList)), False)
+			self.locationList[i].setErrorMode(0)
 			i = i + 1
 
 	def animate(self, i):
-		pullData = self.cas_conn.fetch_watersurface()
-		pullName = self.cas_conn.fetch_name()
-		rowcount = self.cas_conn.fetch_rowcount()
+		pullData = self.cas_conn.fetchWatersurface()
+		pullName = self.cas_conn.fetchName()
+		rowcount = self.cas_conn.fetchRowcount()
 		nameList = [None] * rowcount[0]
 		errList = [None] * rowcount[0]
 		resultList = [None] * rowcount[0]
@@ -306,8 +301,6 @@ class SimDataGen(object):
 
 		xar.append(0)
 		yar.append(0)
-
-		log_data("SDG_bl/animate", "resultList: " + str(resultList) + ", nameList: " + str(nameList), False)
 
 		# Sort nameList in the correct order and fill errList with the incorrect order existing in the database
 		t = 0
@@ -322,11 +315,7 @@ class SimDataGen(object):
 				if (eachName[0] == locName):
 					nameList[u - 1] = str(eachName[0])
 				u = u + 1
-
-			log_data("SDG_bl/animate", "NameList in progress: " + str(nameList), False)
 			t = t + 1
-
-		log_data("SDG_bl/animate", "NameList: " + str(nameList) + " Error list: " + str(errList), False)
 
 		# Compare nameList and errList to sort resultList in the correct order
 		t = 0
@@ -340,29 +329,24 @@ class SimDataGen(object):
 					correctresList[u] = eachLine[0]
 				
 				u = u + 1
-
-			log_data("SDG_bl/animate", "Resultlist in progress: " + str(correctresList), False)
 			t = t + 1
 
-		log_data("SDG_bl/animate", "correctresList: " + str(correctresList) + ", nameList: " + str(nameList), False)
-
 		# Set the correctly ordered lists together
-		o = 0
+		a = 0
 		i = 1
-		while (o < rowcount[0]):
+		while (a < rowcount[0]):
 
 			xar.append(i)
-			yar.append(correctresList[o])
-			log_data("SDG_bl/animate", "Location name: " + str(nameList[o]) + ", Result: " + str(correctresList[o]), False)
+			yar.append(correctresList[a])
 			i = i + 1
-			o = o + 1
+			a = a + 1
 
 		self.ax1.clear()
 		self.ax1.plot(xar, yar)
 
 
 	# Function for fetching data from the database and displaying it at set intervals
-	def run_animation(self):
+	def runAnimation(self):
 
 		# start matplotlib figure
 		fig = plt.figure()
@@ -370,27 +354,24 @@ class SimDataGen(object):
 		ani = animation.FuncAnimation(fig, self.animate, interval=1000) # update every second
 		plt.show()
 
-	def clear_wells(self):
+	def clearWells(self):
 		delids = 100
-		db_ids = self.cas_conn.fetch_ids()
+		db_ids = self.cas_conn.fetchIds()
 		idList = []
-		rowcount = self.cas_conn.fetch_rowcount()
+		rowcount = self.cas_conn.fetchRowcount()
 
 		for user_id in db_ids:
 			idList.append(str(user_id[0]))
 
-		log_data("SDG_bl/clear_wells", "IDlist: " + str(idList), False)
-
 		i = 0
 		while (i <= rowcount[0] - 1):
 			removeId = idList[i]
-			log_data("SDG_bl/clear_wells", "DB_ID: " + str(removeId), False)
 			if (removeId >= delids):
-				self.cas_conn.delete_row(removeId)
+				self.cas_conn.deleteRow(removeId)
 				delids = delids + 1
 			i = i + 1
 
-	def add_new_well(self, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype):
+	def addNewWell(self, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype):
 
 		name = "loc-" + str(self.defaultname)
 
@@ -399,10 +380,10 @@ class SimDataGen(object):
 		self.defaultname = self.defaultname + 1
 
 	# Function for starting the simulation for 10 different measurement wells
-	def start_simulation(self):
+	def startSimulation(self):
 
 		# Connect to database
-		self.cas_conn.establish_connection()
+		self.cas_conn.establishConnection()
 
 		# Create 10 wells with required data (id, name, east, north, well level, incoming flow to the well, outgoing flow to the well, incoming east location,
 		# incoming north location, outgoing east location, outgoing north location, well type)
@@ -419,9 +400,7 @@ class SimDataGen(object):
 
 		i = 0
 		while (i < len(self.locationList)):
-			self.locationList[i].set_pipe_diameters()
+			self.locationList[i].setPipeDiameters()
 			i = i + 1
 
-		log_data("SDG_bl/start_simulation", "Added 10 locations", True)
-
-		self.thread_init()
+		self.threadInit()

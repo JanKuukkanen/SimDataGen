@@ -4,7 +4,7 @@ from data_format import *
 
 # get metadata regarding database from a separate file
 import imp
-modl = imp.load_source('data_file', '/home/user/data_file.py')
+modl = imp.load_source('data_file', 'src/data_file.py')
 
 
 class DatabaseSession(object):
@@ -22,19 +22,19 @@ class DatabaseSession(object):
 	#Constructor
 	def __init__(self, uname="", pword="", kspace="", _node_ips="", _port=""):
 
-		self.username = modl.get_username()
-		self.password = modl.get_password()
-		self.keyspace = modl.get_keyspace()
+		self.username = modl.getUsername()
+		self.password = modl.getPassword()
+		self.keyspace = modl.getKeyspace()
 		self.session = None
 		self.connection = False
-		self.node_ips = modl.get_node_ips()
-		self.port = modl.get_port()
+		self.node_ips = modl.getNodeIps()
+		self.port = modl.getPort()
 		self.metadata = None
 
 
 	#Methods
 	# Connect to the database and set connection to true
-	def establish_connection(self):
+	def establishConnection(self):
 		if (self.connection == False):
 			try:
 				auth_provider = PlainTextAuthProvider(username = self.username, password = self.password)
@@ -48,90 +48,97 @@ class DatabaseSession(object):
 				self.connection = True
 
 			except Exception, e:
+				logData("database_connect/establishConnection", str(e), False)
 				print "Database Error: ", e
 		else:
 			print "Error: Connection already established!"
 
-	def location_data(self):
+	def locationData(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				locdata = self.session.execute("SELECT nimi, vedenpinta, virtausnopeus FROM " + table)
 				return locdata
 			except Exception as e:
+				logData("database_connect/locationData", str(e), False)
 				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to get location data from database"
 
-	def fetch_well_data(self):
+	def fetchWellData(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				locdata = self.session.execute("SELECT id, nimi, vedenpinta, virtausnopeus, east, north, korkeus_merenpinnasta, paine, ominaissahkojohtavuus, lampotila FROM " + table)
 				return locdata
 			except Exception as e:
+				logData("database_connect/fetchWellData", str(e), False)
 				print "Database Error: ", e
 		else:
-			print "Database Error: Failed to get location data from database"
+			print "Database Error: Failed to get well data from database"
 
-	def fetch_ids(self):
+	def fetchIds(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				db_ids = self.session.execute('SELECT id FROM ' + table)
 				return db_ids
 			except Exception as e:
+				logData("database_connect/fetchIds", str(e), False)
 				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to get id's from database"
 
-	def fetch_watersurface(self):
+	def fetchWatersurface(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				watersurfaces = self.session.execute('SELECT vedenpinta FROM ' + table)
 				return watersurfaces
 
 			except Exception as e:
+				logData("database_connect/fetchWatersurface", str(e), False)
 				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to get water surface level from database"
 
-	def fetch_rowcount(self):
+	def fetchRowcount(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				rows = self.session.execute('SELECT COUNT(*) FROM ' + table)
 
 				return rows[0]
 
 			except Exception as e:
+				logData("database_connect/fetchRowcount", str(e), False)
 				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to get rowcount from database"
 
-	def fetch_name(self):
+	def fetchName(self):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				names = self.session.execute('SELECT nimi FROM ' + table)
 				return names
 				
 			except Exception as e:
+				logData("database_connect/fetchName", str(e), False)
 				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to get name from database"
 
-	def delete_row(self, c_id):
+	def deleteRow(self, c_id):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 				delid = c_id
 
 				if (self.connection == True):
@@ -140,34 +147,40 @@ class DatabaseSession(object):
 					print "Database Error: Failed to delete data in the database!"
 
 			except Exception as e:
-				print e
+				logData("database_connect/deleteRow", str(e), False)
+				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to delete row in database"
 
-	def send_meterwell_data(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
+	def sendMeterwellData(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):
 			try:
-				table = modl.get_table()
+				table = modl.getTable()
 
 				# Update row if current id already exists or insert new id if it does not
 				if (id_same == True):
-					self.session.execute("UPDATE " + table + " SET nimi = (%s), east = (%s), north = (%s), korkeus_merenpinnasta = (%s), lampotila = (%s), ominaissahkojohtavuus = (%s), paine = (%s), vedenpinta = (%s), virtausnopeus = (%s) WHERE id = (%s)", (nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus, c_id))
+					self.session.execute("UPDATE " + table + " SET nimi = (%s), east = (%s), north = (%s), korkeus_merenpinnasta = (%s)," \
+										"lampotila = (%s), ominaissahkojohtavuus = (%s), paine = (%s), vedenpinta = (%s), virtausnopeus = (%s) " \
+										"WHERE id = (%s)", (nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus, c_id))
 				elif (id_same == False):
-					self.session.execute("INSERT INTO " + table + " (id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus))
+					self.session.execute("INSERT INTO " + table + " (id, nimi, east, north, korkeus_merenpinnasta, " \
+										"lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", \
+										(c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus))
 				else:
 					print "Database Error: Somethin's gone all wrong"
 
 			except Exception as e:
-				print e
+				logData("database_connect/sendMeterwellData", str(e), False)
+				print "Database Error: ", e
 		else:
 			print "Database Error: Failed to insert data to database!"
 
 	# return the state of the database connection
-	def get_connection(self):
+	def getConnection(self):
 			return self.connection
 
 	# Close the database connection and set connection to false
-	def close_connection(self):
+	def closeConnection(self):
 		if (self.connection == True):
 			try:
 				self.session.cluster.shutdown()
@@ -175,6 +188,7 @@ class DatabaseSession(object):
 				self.connection = False
 				print "Connection closed"
 			except Exception as e:
-				print e
+				logData("database_connect/closeConnection", str(e), False)
+				print "Database Error: ", e
 		else:
 			print "Error: Failed to close database connection"

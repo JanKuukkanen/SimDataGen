@@ -5,7 +5,6 @@
 
 import math
 import random
-from data_format import *
 
 class MeterWell(object):
 
@@ -81,94 +80,43 @@ class MeterWell(object):
 	#Methods
 
 	# Getters & Setters
-	def get_wellid(self):
+	def getWellid(self):
 		return self.wellid
 
-	def get_name(self):
+	def getName(self):
 		return self.name
 
-	def set_name(self, name):
-		self.name = name
-
-	def get_eastloc(self):
-		return self.eastloc
-
-	def set_eastloc(self, eastloc):
+	def setEastloc(self, eastloc):
 		self.eastloc = eastloc
 
-	def get_northloc(self):
-		return self.northloc
-
-	def set_northloc(self, northloc):
+	def setNorthloc(self, northloc):
 		self.northloc = northloc
 
-	def get_well_level(self):
-		return self.well_level
-
-	def set_well_level(self, well_level):
+	def setWellLevel(self, well_level):
 		self.well_level = well_level
 
-	def get_flowrate(self):
-		return self.flowrate
-
-	def set_flowrate(self, flowrate):
-		self.flowrate = flowrate
-
-	def get_watersurface(self):
-		return self.watersurface
-
-	def set_watersurface(self, watersurface):
-		self.watersurface = watersurface
-
-	def get_temperature(self):
-		return self.temperature
-
-	def set_temperature(self, temperature):
-		self.temperature = temperature
-
-	def get_conductivity(self):
-		return self.conductivity
-
-	def set_conductivity(self, conductivity):
-		self.conductivity = conductivity
-
-	def get_pressure(self):
+	def getPressure(self):
 		return self.pressure
 
-	def set_pressure(self, pressure1):
-		self.pressure = pressure1
-
-	def get_out_pipe_loc(self):
-		return self.out_pipe_loc
-
-	def set_out_pipe_loc(self, x, y):
+	def setOutPipeLoc(self, x, y):
 		self.out_pipe_loc[0] = x
 		self.out_pipe_loc[1] = y
 
-	def get_inc_pipe_loc(self):
-		return self.inc_pipe_loc
-
-	def set_inc_pipe_loc(self, x, y):
+	def setIncPipeLoc(self, x, y):
 		self.inc_pipe_loc[0] = x
 		self.inc_pipe_loc[1] = y
 
-	def set_well_level(self, well_level):
-		self.well_level = well_level
-
-	def set_well_diameter(self, well_diameter):
-		self.well_diameter = well_diameter
-
-	def set_inc_flow_well(self, inc_flow_well):
+	def setIncFlowWell(self, inc_flow_well):
 		self.inc_flow_well = inc_flow_well
 
-	def set_out_flow_well(self, out_flow_well):
+	def setOutFlowWell(self, out_flow_well):
 		self.out_flow_well = out_flow_well
 
-	def set_error_mode(self, error):
+	def setErrorMode(self, error):
 		self.error_mode = str(error)
 
 	# Set incoming and outgoing pipe diameters for the well according to well type
-	def set_pipe_diameters(self):
+	def setPipeDiameters(self):
 		if (self.welltype == 1):
 			self.inc_pipe_d = 0.2
 			self.out_pipe_d = 0.2
@@ -251,8 +199,6 @@ class MeterWell(object):
 			x = int(math.sqrt(y))
 			x = float(x)/100
 
-			log_data("Measurement_location/tyonto", "Q: " + str(q) + ", Y: " + str(y) + ", X: " + str(x), False)
-
 			if (0.3<x):
 				self.pressure = 0.3
 			else:
@@ -280,15 +226,12 @@ class MeterWell(object):
 		# Incoming flow to the well
 		if (c == 0):
 			sisaan_v = float(random.randrange(6, 8))/10
-			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v), False)
 		else:
 			sisaan_v = self.virtausnopeus(c,a,xa) + fu
-			log_data("Measurement_location/countWaterLevel", "sisaan_v: " + str(sisaan_v) + ", former_pressure: " + str(fu), False)
 
 		if (self.error_mode == "1"):
 			sisaan_v = sisaan_v * 2
 
-		log_data("Measurement_location/countWaterLevel", "Location: " + self.name + " sisaan_v error mode: " + str(self.error_mode), False)
 
 		tilavuus_sisaan = float(self.virtaustilavuus(self.inc_pipe_d, sisaan_v))
 		# Outgoing flow from the well
@@ -304,8 +247,6 @@ class MeterWell(object):
 		r = d/2
 		muutos = float(self.pinta(t, r, self.flowrate))
 		syvyys = self.watersurface + muutos
-
-		log_data("Measurement_location/countWaterLevel", "Pressure: " + str(self.pressure) + ", Flowrate: " + str(self.flowrate), False)
 
 		if (last == True):
 			if (syvyys < 0):
