@@ -30,3 +30,5 @@ Once you've configured the database, start the program by running the file start
 |Python| 2.7.6 |
 |Cassandra| 2.2.6 |
 |cqlsh| 5.0.1 |
+|pip|8.1.2|
+|matplotlib|1.3.1|
