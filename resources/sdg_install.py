@@ -22,7 +22,7 @@ try:
 	text_file.write('def getUsername():\n    return username\n')
 	text_file.write('def getPassword():\n    return password\n')
 	text_file.write('def getKeyspace():\n    return keyspace\n')
-	text_file.write('def getNode_ips():\n    return node_ips\n')
+	text_file.write('def getNodeIps():\n    return node_ips\n')
 	text_file.write('def getPort():\n    return port\n')
 	text_file.write('def getTable():\n    return table\n')
 
