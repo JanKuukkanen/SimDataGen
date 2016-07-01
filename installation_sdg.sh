@@ -1,6 +1,6 @@
 # installation file for SimDataGen
 
-chmod -R u+x .
+chmod -R 766 .
 
 apt-get update
 
