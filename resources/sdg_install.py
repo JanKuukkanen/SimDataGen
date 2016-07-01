@@ -9,7 +9,7 @@ try:
 	node_ips = raw_input("Enter Cassandra ip-address: ")
 	table = raw_input("Enter Cassandra table name: ")
 
-	text_file = open("../src/data_file.py", "w")
+	text_file = open("./src/data_file.py", "w")
 
 	text_file.write('# File for storing information about the database.\n\n')
 	text_file.write('username = "' + username + '"\n')
