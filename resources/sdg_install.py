@@ -7,7 +7,8 @@ try:
 	password = raw_input("Enter Cassandra password: ")
 	keyspace = raw_input("Enter Cassandra keyspace: ")
 	node_ips = raw_input("Enter Cassandra ip-address: ")
-	table = raw_input("Enter Cassandra table name: ")
+	port = "9042"
+	table = "measuring_data"
 
 	text_file = open("./src/data_file.py", "w")
 
@@ -16,7 +17,7 @@ try:
 	text_file.write('password = "' + password + '"\n')
 	text_file.write('keyspace = "' + keyspace + '"\n')
 	text_file.write("node_ips = ['" + node_ips + "']\n")
-	text_file.write('port = "9042"\n')
+	text_file.write('port = "' + port + '"\n')
 	text_file.write('table = "' + table + '"\n\n')
 
 	text_file.write('def getUsername():\n    return username\n')

@@ -10,13 +10,16 @@ from data_format import *
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import re
+import random
 
 class SimDataGen(object):
 
 	#Attributes
 	time = None
 	threading_is = False
+	threading_is2 = False
 	threads = None
+	threads2 = None
 	delay_time = 1
 	locationList = []
 	ax1 = None
@@ -27,6 +30,7 @@ class SimDataGen(object):
 	
 	# Initialize database object
 	cas_conn = DatabaseSession()
+	cas_conn2 = DatabaseSession()
 
 	#Constructor
 	def __init__(self, delay_time=5):
@@ -69,7 +73,7 @@ class SimDataGen(object):
 
 			while (self.threading_is == True):
 
-				# Suspend execution for 5 seconds
+				# Suspend execution for the amount of time specified in delay_time
 				sleep(self.delay_time)
 
 				i = 0
@@ -109,13 +113,65 @@ class SimDataGen(object):
 			logData("SDG_bl/meterwellThread", str(e), False)
 			print e
 
-	# Threading frame
-	def threadInit(self):
-		try:
-			# Set the target function and arguments for thread
-			self.threads = Thread(target = self.meterwellThread, args = (1, ))
+	def thousandMeterThread(self, wellamount):
 
-			self.threads.start()
+		try:
+			db_ids = self.cas_conn2.fetchIds()
+
+			id_same = False
+
+			self.threading_is2 = True
+
+			while (self.threading_is2 == True):
+
+				i = 0
+				wellid = 1000
+				choosables = [0, 10, 20, 30, 40, 50]
+				incrementparam = random.choice(choosables)
+				increment = 10
+			
+				# Suspend execution for the amount of time specified in delay_time
+				sleep(self.delay_time)
+
+				while (i <= wellamount):
+					# Check if our current id already exists in the database
+					for user_id in db_ids:
+						if (wellid == user_id):
+							id_same = True
+						else:
+							id_same = False
+
+					self.cas_conn2.sendMeterwellData(id_same, wellid, "loc-" + str(wellid), wellid, wellid, wellid, wellid, wellid, 0, incrementparam, incrementparam)
+
+					incrementparam = incrementparam + increment
+
+					if (incrementparam < 10):
+						increment = 10
+					elif (incrementparam > 50):
+						increment = -10
+
+					wellid = wellid + 1
+					i = i + 1
+
+		except Exception as e:
+			logData("SDG_bl/thousandMeterThread", str(e), False)
+
+
+
+	# Threading frame
+	def threadInit(self, choice, wellamount):
+		try:
+			if (choice == 1):
+				# Set the target function and arguments for thread
+				self.threads = Thread(target = self.meterwellThread, args = (1, ))
+
+				self.threads.start()
+
+			elif (choice == 2):
+				# Set the target function and arguments for thread
+				self.threads2 = Thread(target = self.thousandMeterThread, args = (wellamount, ))
+
+				self.threads2.start()
 
 		except Exception as e:
 			print e
@@ -123,23 +179,52 @@ class SimDataGen(object):
 
 	# Close running thread and database connection
 	def databaseClose(self):
-		if (self.threading_is == True):
-			# Set threading_is variable to false so the thread will close
-			self.threading_is = False
+		try:
+			skip1 = False
+			skip2 = False
+
+			if (self.threading_is == True):
+				# Set threading_is variable to false so the thread will close
+				self.threading_is = False
+			else:
+				skip1 = True
+
+			if (self.threading_is2 == True):
+				# Set threading_is variable to false so the thread will close
+				self.threading_is2 = False
+			else:
+				skip2 = True
 
 			# Wait for active threads to finish
-			self.threads.join()
-		# Close database connection
-		self.cas_conn.closeConnection()
+			if (skip1 == False):
+				self.threads.join()
+			if (skip2 == False):
+				self.threads2.join()
+
+			# Close database connection
+			if (skip1 == False):
+				self.cas_conn.closeConnection()
+			if (skip2 == False):
+				self.cas_conn2.closeConnection()
+
+		except Exception as e:
+			logData("SDG_bl/databaseClose", str(e), False)
 
 	def setDelayTime(self, delay_time):
 		
 		self.delay_time = int(delay_time)
 
 	def checkDatabaseConnection(self):
-		connection = self.cas_conn.getConnection()
+		connection1 = self.cas_conn.getConnection()
+
+		connection2 = self.cas_conn2.getConnection()
 		
-		return connection
+		if (connection1 == True):
+			return connection1
+		if (connection2 == True):
+			return connection2
+		else:
+			return False
 
 	def checkLocation(self, selected_loc):
 		i = 0
@@ -177,7 +262,7 @@ class SimDataGen(object):
 		else:
 			return False
 
-	def validateDelayTime(self, delay_time):
+	def validateNumber(self, delay_time):
 		pattern = "^\d*$"
 		if (re.search(pattern, delay_time)):
 			return True
@@ -371,6 +456,12 @@ class SimDataGen(object):
 				delids = delids + 1
 			i = i + 1
 
+	def deletePrevious(self):
+		rowcount = self.cas_conn2.fetchRowcount()
+		wellid = 1000
+
+		self.cas_conn2.deleteManyRows(wellid, rowcount)
+
 	def addNewWell(self, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype):
 
 		name = "loc-" + str(self.defaultname)
@@ -378,6 +469,15 @@ class SimDataGen(object):
 		self.locationList.append(MeterWell(self.defaultid, name, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype))
 		self.defaultid = self.defaultid + 1
 		self.defaultname = self.defaultname + 1
+
+	def startThousandSimulation(self, wellamount):
+		self.cas_conn2.establishConnection()
+
+		logData("SDG_bl/startThousandSimulation", "Program started", True)
+
+		self.deletePrevious()
+
+		self.threadInit(2, wellamount)
 
 	# Function for starting the simulation for 10 different measurement wells
 	def startSimulation(self):
@@ -403,4 +503,6 @@ class SimDataGen(object):
 			self.locationList[i].setPipeDiameters()
 			i = i + 1
 
-		self.threadInit()
+		logData("SDG_bl/startSimulation", "Program started", True)
+
+		self.threadInit(1, 10)

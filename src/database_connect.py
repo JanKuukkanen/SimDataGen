@@ -152,6 +152,24 @@ class DatabaseSession(object):
 		else:
 			print "Database Error: Failed to delete row in database"
 
+	def deleteManyRows(self, c_id, rowcount):
+		if (self.connection == True):
+			try:
+				table = modl.getTable()
+				delid = c_id
+
+				while (delid < rowcount[0]):
+						self.session.execute("DELETE FROM " + table + " WHERE id = " + str(delid) + " AND east = " + str(delid) + " AND paine = 0 IF EXISTS")
+
+						delid = delid + 1
+						logData("database_connect/deleteManyRows", "Delete id: " + str(delid) + ", Rowcount: " + str(rowcount[0]), False)
+
+			except Exception as e:
+				logData("database_connect/deleteManyRows", str(e), False)
+				print "Database Error: ", e
+		else:
+			print "Database Error: Failed to delete row in database"
+
 	def sendMeterwellData(self, id_same, c_id, nimi, east, north, korkeus_merenpinnasta, lampotila, ominaissahkojohtavuus, paine, vedenpinta, virtausnopeus):
 		if (self.connection == True):
 			try:

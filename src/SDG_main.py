@@ -30,7 +30,7 @@ try:
 		option = raw_input("Enter a number to start an action:\n" + "1 to change delay speed\n" +
 							"2 to start SimDataGen sewer system simulation\n" + "3 to start simulation animation\n" + "4 to change a location's parameter\n" +
 							"5 to add a new location\n" + "6 to clear extra wells\n" + "7 to display currently existing well locations\n" +
-							"8 to enable error mode\n" + "9 to disable error mode\n" + "0 to close the program\n" + "simdatagen>> ")
+							"8 to enable error mode\n" + "9 to disable error mode\n" + "20 to to start many wells at once\n" + "0 to close the program\n" + "simdatagen>> ")
 
 
 		# Alter program's updating delay amount
@@ -38,7 +38,7 @@ try:
 			if (sdg_started == True):
 				delay_time = raw_input("Enter delay speed: ")
 
-				validate_delay = sdg.validateDelayTime(delay_time)
+				validate_delay = sdg.validateNumber(delay_time)
 
 				if (validate_delay == True):
 					print delay_time, "\n"
@@ -54,6 +54,18 @@ try:
 			sdg.startSimulation()
 
 			sdg_started = True
+
+		# Start 10000 well location simulation
+		elif (option == "20"):
+
+			wellamount = raw_input("Enter the desired amount of wells: ")
+
+			validate_amount = sdg.validateNumber(wellamount)
+
+			if (validate_amount == True):
+				sdg.startThousandSimulation(int(wellamount))
+
+				sdg_started = True
 
 		# Start mathplotlib visualization of the database traffic
 		elif (option == "3"):
@@ -208,7 +220,7 @@ try:
 	
 	sys.exit()
 
-except Exception, e:
+except Exception as e:
 	logData("SDG_main/imports", str(e), False)
 	print "Failed to Start SimDataGen! Make sure you have a working Cassandra database with the correct sql schema created. " \
 			"The database schema can be found in the resources folder. After you have the database working run the installation_sdg.sh file"
