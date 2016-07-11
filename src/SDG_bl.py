@@ -10,6 +10,7 @@ from data_format import *
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import re
+import random
 
 class SimDataGen(object):
 
@@ -118,15 +119,16 @@ class SimDataGen(object):
 			db_ids = self.cas_conn2.fetchIds()
 
 			id_same = False
-			i = 0
-			wellid = 1000
-
-			incrementparam = 10
-			increment = 10
 
 			self.threading_is2 = True
 
 			while (self.threading_is2 == True):
+
+				i = 0
+				wellid = 1000
+				choosables = [0, 10, 20, 30, 40, 50]
+				incrementparam = random.choice(choosables)
+				increment = 10
 			
 				# Suspend execution for the amount of time specified in delay_time
 				sleep(self.delay_time)
@@ -454,6 +456,12 @@ class SimDataGen(object):
 				delids = delids + 1
 			i = i + 1
 
+	def deletePrevious(self):
+		rowcount = self.cas_conn2.fetchRowcount()
+		wellid = 1000
+
+		self.cas_conn2.deleteManyRows(wellid, rowcount)
+
 	def addNewWell(self, east, north, well_level, inc_flow, out_flow, XE, XN, YE, YN, welltype):
 
 		name = "loc-" + str(self.defaultname)
@@ -466,6 +474,8 @@ class SimDataGen(object):
 		self.cas_conn2.establishConnection()
 
 		logData("SDG_bl/startThousandSimulation", "Program started", True)
+
+		self.deletePrevious()
 
 		self.threadInit(2, wellamount)
 
