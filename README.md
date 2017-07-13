@@ -26,7 +26,7 @@ Once you've configured the database, start the program by running the file start
 
 ## Development tools
 | Tool | Version | 
-|:----:|:----:|:-----:|
+| ---- | ---- |
 |Python| 2.7.6 |
 |Cassandra| 2.2.6 |
 |cqlsh| 5.0.1 |
